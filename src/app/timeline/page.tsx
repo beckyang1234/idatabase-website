@@ -46,7 +46,7 @@ export default function TimelinePage() {
           <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-blue-200"></div>
           
           <div className="space-y-8">
-            {timelineEvents.map((event, index) => (
+            {timelineEvents.map((event) => (
               <div key={event.id} className="relative flex items-start">
                 <div className="absolute left-6 w-4 h-4 bg-blue-500 rounded-full border-4 border-white shadow"></div>
                 

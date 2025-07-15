@@ -1,20 +1,10 @@
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
-// 这里可以添加身份验证逻辑
-const isAuthenticated = false // 实际项目中这里会检查用户登录状态
-
 export default function AdminPage() {
-  // 如果未登录，重定向到管理员登录页面
-  if (!isAuthenticated) {
-    redirect('/admin-login')
-  }
-
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* 管理后台导航 */}
       <nav className="bg-slate-900 text-white">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -97,7 +87,6 @@ export default function AdminPage() {
           </Card>
         </div>
 
-        {/* 快速统计面板 */}
         <section className="mt-12">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">数据概览</h2>
           <div className="grid md:grid-cols-4 gap-6">

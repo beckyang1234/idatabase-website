@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
@@ -51,13 +50,14 @@ const getArticle = (id: string): Article => {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default function ArticlePage({ params }: PageProps) {
-  const article = getArticle(params.id)
+export default async function ArticlePage({ params }: PageProps) {
+  const { id } = await params
+  const article = getArticle(id)
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -106,7 +106,7 @@ export default function ArticlePage({ params }: PageProps) {
 
           <div className="p-8">
             <div className="prose max-w-none">
-              <p>{article.content}</p>
+              <p className="text-slate-700 leading-7">{article.content}</p>
               
               {article.isPaid && article.id === '2' && (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mt-8">

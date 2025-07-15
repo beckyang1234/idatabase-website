@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  phone       String?  @unique
+  wechatId    String?  @unique
+  nickname    String
+  avatar      String?
+  email       String?  @unique
+  role        Role     @default(USER)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 关系
+  articles    Article[]
+  orders      Order[]
+  userArticles UserArticle[]
+  
+  @@map("users")
+}
+
+model Article {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  summary     String?
+  authorId    String
+  category    Category
+  isPaid      Boolean  @default(false)
+  price       Float?
+  coverImage  String?
+  views       Int      @default(0)
+  status      Status   @default(DRAFT)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 关系
+  author      User     @relation(fields: [authorId], references: [id])
+  orders      Order[]
+  userArticles UserArticle[]
+  
+  @@map("articles")
+}
+
+model Order {
+  id            String    @id @default(cuid())
+  userId        String
+  articleId     String
+  amount        Float
+  status        OrderStatus @default(PENDING)
+  paymentMethod String?
+  createdAt     DateTime  @default(now())
+  
+  // 关系
+  user          User      @relation(fields: [userId], references: [id])
+  article       Article   @relation(fields: [articleId], references: [id])
+  
+  @@map("orders")
+}
+
+model UserArticle {
+  userId      String
+  articleId   String
+  purchasedAt DateTime @default(now())
+  readAt      DateTime?
+  
+  // 关系
+  user        User     @relation(fields: [userId], references: [id])
+  article     Article  @relation(fields: [articleId], references: [id])
+  
+  @@id([userId, articleId])
+  @@map("user_articles")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  VIP
+  USER
+}
+
+enum Category {
+  LATEST
+  EXPERIENCE
+  TIMELINE
+}
+
+enum Status {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+}

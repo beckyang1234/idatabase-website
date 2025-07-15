@@ -1,0 +1,136 @@
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+
+// 这里可以添加身份验证逻辑
+const isAuthenticated = false // 实际项目中这里会检查用户登录状态
+
+export default function AdminPage() {
+  // 如果未登录，重定向到管理员登录页面
+  if (!isAuthenticated) {
+    redirect('/admin-login')
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* 管理后台导航 */}
+      <nav className="bg-slate-900 text-white">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold">iDatabase 管理后台</h1>
+            <div className="flex items-center space-x-4">
+              <span className="text-slate-300">管理员</span>
+              <Button asChild variant="outline" size="sm" className="border-slate-600 text-slate-300 hover:bg-slate-800">
+                <Link href="/">返回网站</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="container mx-auto px-4 py-8">
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">管理控制台</h1>
+          <p className="text-slate-600">内容管理和用户管理</p>
+        </header>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-white">
+            <CardHeader>
+              <CardTitle className="text-slate-900">文章管理</CardTitle>
+              <CardDescription className="text-slate-600">创建、编辑和管理文章内容</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white">管理文章</Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-white">
+            <CardHeader>
+              <CardTitle className="text-slate-900">用户管理</CardTitle>
+              <CardDescription className="text-slate-600">管理注册用户和权限</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white">管理用户</Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-white">
+            <CardHeader>
+              <CardTitle className="text-slate-900">订单管理</CardTitle>
+              <CardDescription className="text-slate-600">查看和管理付费订单</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white">查看订单</Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-white">
+            <CardHeader>
+              <CardTitle className="text-slate-900">数据统计</CardTitle>
+              <CardDescription className="text-slate-600">查看访问量和收入统计</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white">查看统计</Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-white">
+            <CardHeader>
+              <CardTitle className="text-slate-900">系统设置</CardTitle>
+              <CardDescription className="text-slate-600">网站配置和支付设置</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white">系统设置</Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-white">
+            <CardHeader>
+              <CardTitle className="text-slate-900">内容审核</CardTitle>
+              <CardDescription className="text-slate-600">审核用户提交的内容</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white">内容审核</Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 快速统计面板 */}
+        <section className="mt-12">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">数据概览</h2>
+          <div className="grid md:grid-cols-4 gap-6">
+            <Card className="border-0 shadow-lg bg-white">
+              <CardContent className="p-6">
+                <div className="text-2xl font-bold text-slate-900 mb-2">1,234</div>
+                <div className="text-slate-600">总用户数</div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-0 shadow-lg bg-white">
+              <CardContent className="p-6">
+                <div className="text-2xl font-bold text-slate-900 mb-2">89</div>
+                <div className="text-slate-600">文章总数</div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-0 shadow-lg bg-white">
+              <CardContent className="p-6">
+                <div className="text-2xl font-bold text-slate-900 mb-2">456</div>
+                <div className="text-slate-600">付费订单</div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-0 shadow-lg bg-white">
+              <CardContent className="p-6">
+                <div className="text-2xl font-bold text-slate-900 mb-2">¥12,345</div>
+                <div className="text-slate-600">本月收入</div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      </div>
+    </div>
+  )
+}

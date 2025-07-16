@@ -6,6 +6,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
+// 模拟用户数据库（实际项目中应该在后端）
+const getStoredUsers = () => {
+  if (typeof window !== 'undefined') {
+    const users = localStorage.getItem('users')
+    return users ? JSON.parse(users) : []
+  }
+  return []
+}
+
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: '',
@@ -28,25 +37,36 @@ export default function LoginPage() {
     setMessage('')
 
     try {
-      // 模拟登录过程
       await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // 简单的验证
       if (!formData.email || !formData.password) {
         setMessage('请填写邮箱和密码')
         return
       }
 
-      // 模拟成功登录
-      setMessage('登录成功！欢迎回来')
+      // 检查用户是否存在
+      const users = getStoredUsers()
+      const user = users.find((u: any) => u.email === formData.email && u.password === formData.password)
       
-      // 2秒后跳转到首页
-      setTimeout(() => {
-        window.location.href = '/'
-      }, 1500)
+      if (user) {
+        // 登录成功，保存登录状态
+        localStorage.setItem('currentUser', JSON.stringify({
+          name: user.name,
+          email: user.email,
+          loginTime: new Date().toISOString()
+        }))
+        
+        setMessage('登录成功！欢迎回来')
+        
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 1500)
+      } else {
+        setMessage('邮箱或密码错误，请检查后重试')
+      }
 
     } catch (error) {
-      setMessage('登录失败，请检查邮箱和密码')
+      setMessage('登录失败，请稍后重试')
     } finally {
       setIsLoading(false)
     }

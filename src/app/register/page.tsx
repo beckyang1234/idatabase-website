@@ -6,6 +6,24 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
+// 获取已存储的用户
+const getStoredUsers = () => {
+  if (typeof window !== 'undefined') {
+    const users = localStorage.getItem('users')
+    return users ? JSON.parse(users) : []
+  }
+  return []
+}
+
+// 保存用户
+const saveUser = (userData: any) => {
+  if (typeof window !== 'undefined') {
+    const users = getStoredUsers()
+    users.push(userData)
+    localStorage.setItem('users', JSON.stringify(users))
+  }
+}
+
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
@@ -29,10 +47,8 @@ export default function RegisterPage() {
     setMessage('')
 
     try {
-      // 模拟注册过程
       await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // 简单的验证
       if (!formData.name || !formData.email || !formData.password) {
         setMessage('请填写所有字段')
         return
@@ -43,8 +59,26 @@ export default function RegisterPage() {
         return
       }
 
-      // 模拟成功注册
-      setMessage('注册成功！欢迎加入 iDatabase')
+      // 检查邮箱是否已存在
+      const users = getStoredUsers()
+      const existingUser = users.find((u: any) => u.email === formData.email)
+      
+      if (existingUser) {
+        setMessage('该邮箱已注册，请直接登录')
+        return
+      }
+
+      // 保存新用户
+      const newUser = {
+        id: Date.now().toString(),
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        registerTime: new Date().toISOString()
+      }
+      
+      saveUser(newUser)
+      setMessage('注册成功！正在跳转到登录页面...')
       
       // 清空表单
       setFormData({ name: '', email: '', password: '' })

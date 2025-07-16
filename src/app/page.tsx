@@ -1,8 +1,29 @@
+'use client'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function Home() {
+  const [currentUser, setCurrentUser] = useState<any>(null)
+
+  useEffect(() => {
+    // 检查登录状态
+    if (typeof window !== 'undefined') {
+      const user = localStorage.getItem('currentUser')
+      if (user) {
+        setCurrentUser(JSON.parse(user))
+      }
+    }
+  }, [])
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('currentUser')
+      setCurrentUser(null)
+    }
+  }
+
   return (
     <main className="min-h-screen bg-slate-50">
       {/* 导航栏 */}
@@ -23,12 +44,32 @@ export default function Home() {
                 时间线
               </Link>
               <div className="flex items-center space-x-3">
-                <Button asChild variant="outline" size="sm" className="border-slate-300 text-slate-700">
-                  <Link href="/login">登录</Link>
-                </Button>
-                <Button asChild size="sm" className="bg-slate-900 hover:bg-slate-800 text-white">
-                  <Link href="/register">注册</Link>
-                </Button>
+                {currentUser ? (
+                  // 已登录状态
+                  <>
+                    <span className="text-slate-700 text-sm">
+                      欢迎，{currentUser.name}
+                    </span>
+                    <Button 
+                      onClick={handleLogout}
+                      variant="outline" 
+                      size="sm" 
+                      className="border-slate-300 text-slate-700"
+                    >
+                      退出登录
+                    </Button>
+                  </>
+                ) : (
+                  // 未登录状态
+                  <>
+                    <Button asChild variant="outline" size="sm" className="border-slate-300 text-slate-700">
+                      <Link href="/login">登录</Link>
+                    </Button>
+                    <Button asChild size="sm" className="bg-slate-900 hover:bg-slate-800 text-white">
+                      <Link href="/register">注册</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -48,9 +89,11 @@ export default function Home() {
             <Button asChild size="lg" className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-3">
               <Link href="/latest">了解最新政策</Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-slate-300 text-slate-700 px-8 py-3">
-              <Link href="/register">免费注册</Link>
-            </Button>
+            {!currentUser && (
+              <Button asChild variant="outline" size="lg" className="border-slate-300 text-slate-700 px-8 py-3">
+                <Link href="/register">免费注册</Link>
+              </Button>
+            )}
           </div>
         </section>
 

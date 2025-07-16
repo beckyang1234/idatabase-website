@@ -5,41 +5,49 @@ import { Badge } from '@/components/ui/badge'
 
 const timelineEvents = [
   {
-    id: '6',
-    title: '2025-01-15: 美联储主席发表重要讲话',
-    summary: '美联储主席在达沃斯论坛上发表了关于未来货币政策的重要讲话...',
+    id: '9',
+    title: '2025-01-15: Express Entry第一轮邀请结果',
+    summary: 'IRCC发出2025年首轮Express Entry邀请，CRS分数线为485分，共邀请4500人...',
     date: '2025-01-15',
     time: '14:30',
     isPaid: false
   },
   {
-    id: '7',
-    title: '2025-01-14: 中国央行调整MLF利率',
-    summary: '中国人民银行调整中期借贷便利（MLF）操作利率，释放流动性信号...',
+    id: '10',
+    title: '2025-01-14: 安省PNP新增Tech职业类别',
+    summary: '安大略省提名项目新增科技人才类别，为AI、机器学习等新兴技术岗位开辟快速通道...',
     date: '2025-01-14',
     time: '09:15',
     isPaid: true
   },
   {
-    id: '8',
-    title: '2025-01-13: 重要经济数据发布',
-    summary: '国家统计局发布2024年四季度GDP数据，同比增长情况超预期...',
+    id: '11',
+    title: '2025-01-13: 魁省投资移民项目重启',
+    summary: '魁北克省宣布重启投资移民项目，投资金额调整为200万加元，申请条件有重大变化...',
     date: '2025-01-13',
     time: '10:00',
+    isPaid: false
+  },
+  {
+    id: '12',
+    title: '2025-01-12: 联邦自雇移民审理时间更新',
+    summary: '联邦自雇移民项目最新审理时间公布，目前平均处理周期为31个月...',
+    date: '2025-01-12',
+    time: '16:45',
     isPaid: false
   }
 ]
 
 export default function TimelinePage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-8">
         <header className="mb-8">
           <Link href="/" className="text-blue-600 hover:underline mb-4 inline-block">
             ← 返回首页
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">时间线</h1>
-          <p className="text-gray-600">按时间顺序展示的重要事件</p>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">时间线</h1>
+          <p className="text-slate-600">重要移民政策时间节点和申请流程</p>
         </header>
 
         <div className="relative">

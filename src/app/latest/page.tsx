@@ -6,46 +6,56 @@ import { Badge } from '@/components/ui/badge'
 const articles = [
   {
     id: '1',
-    title: '2025年全球经济趋势分析',
-    summary: '深入分析2025年全球经济发展趋势，包括通胀预期、货币政策走向等关键因素...',
+    title: '2025年快速通道（Express Entry）最新变化',
+    summary: '联邦政府宣布Express Entry系统的重要调整，包括CRS评分标准变化和新的邀请策略...',
     isPaid: false,
     price: 0,
     views: 1234,
     createdAt: '2025-01-15',
-    author: { nickname: '经济观察员' }
+    author: { nickname: '移民顾问张老师' }
   },
   {
     id: '2',
-    title: '美联储政策解读：下一步走向',
-    summary: '最新美联储会议纪要解读，分析未来货币政策可能的调整方向...',
+    title: 'PNP省提名项目2025年配额分析',
+    summary: '各省移民局公布了2025年省提名配额，安省、BC省、阿省等热门省份的配额变化详解...',
     isPaid: true,
-    price: 9.9,
+    price: 19.9,
     views: 567,
     createdAt: '2025-01-14',
-    author: { nickname: '金融分析师' }
+    author: { nickname: '移民专家李顾问' }
   },
   {
     id: '3',
-    title: 'A股市场投资机会梳理',
-    summary: '当前A股市场投资机会分析，重点关注的板块和个股推荐...',
+    title: '加拿大学签新政策解读',
+    summary: 'IRCC发布学习许可申请新要求，包括语言成绩、资金证明和学习计划的最新标准...',
     isPaid: true,
-    price: 19.9,
+    price: 15.9,
     views: 890,
     createdAt: '2025-01-13',
-    author: { nickname: '投资顾问' }
+    author: { nickname: '教育顾问王老师' }
+  },
+  {
+    id: '4',
+    title: '魁北克移民项目最新动态',
+    summary: '魁省移民局发布CSQ申请新规定，法语要求和投资移民政策均有重大调整...',
+    isPaid: false,
+    price: 0,
+    views: 756,
+    createdAt: '2025-01-12',
+    author: { nickname: '魁省移民专家' }
   }
 ]
 
 export default function LatestPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-8">
         <header className="mb-8">
           <Link href="/" className="text-blue-600 hover:underline mb-4 inline-block">
             ← 返回首页
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">最新动态</h1>
-          <p className="text-gray-600">实时更新的行业资讯和重要信息</p>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">最新动态</h1>
+          <p className="text-slate-600">最新的加拿大移民政策变化和重要通知</p>
         </header>
 
         <div className="grid gap-6">

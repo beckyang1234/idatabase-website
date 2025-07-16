@@ -39,14 +39,14 @@ export default function Home() {
         {/* 英雄区域 */}
         <section className="text-center mb-20">
           <h1 className="text-5xl font-bold text-slate-900 mb-6 leading-tight">
-            专业内容平台
+            加拿大移民信息平台
           </h1>
           <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            获取最新动态、专业经验分享和重要时间线，助您在信息时代保持领先
+            获取最新移民政策、专业申请经验和重要时间节点，助您顺利移民加拿大
           </p>
           <div className="flex justify-center space-x-4">
             <Button asChild size="lg" className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-3">
-              <Link href="/latest">开始阅读</Link>
+              <Link href="/latest">了解最新政策</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="border-slate-300 text-slate-700 px-8 py-3">
               <Link href="/register">免费注册</Link>
@@ -57,13 +57,13 @@ export default function Home() {
         {/* 功能卡片 */}
         <section className="grid md:grid-cols-3 gap-8 mb-16">
           <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-white">
-            <CardHeader className="pb-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">📊</span>
+            <CardHeader className="pb-4 text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                <span className="text-3xl">📰</span>
               </div>
               <CardTitle className="text-slate-900">最新动态</CardTitle>
               <CardDescription className="text-slate-600">
-                实时更新的行业资讯和重要信息，让您第一时间掌握市场动向
+                最新的加拿大移民政策变化和重要通知
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -74,13 +74,13 @@ export default function Home() {
           </Card>
 
           <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-white">
-            <CardHeader className="pb-4">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">💡</span>
+            <CardHeader className="pb-4 text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                <span className="text-3xl">🍁</span>
               </div>
               <CardTitle className="text-slate-900">经验分享</CardTitle>
               <CardDescription className="text-slate-600">
-                专业人士的深度分析和实战经验，帮您避坑并快速成长
+                真实移民案例分享和专业申请经验
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -91,13 +91,13 @@ export default function Home() {
           </Card>
 
           <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-white">
-            <CardHeader className="pb-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">⏰</span>
+            <CardHeader className="pb-4 text-center">
+              <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                <span className="text-3xl">📅</span>
               </div>
               <CardTitle className="text-slate-900">时间线</CardTitle>
               <CardDescription className="text-slate-600">
-                按时间顺序展示的重要事件，清晰了解发展脉络
+                重要移民政策时间节点和申请流程
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -111,9 +111,9 @@ export default function Home() {
         {/* 特色内容 */}
         <section className="bg-white rounded-2xl p-12 shadow-lg">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">为什么选择 iDatabase</h2>
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">为什么选择我们</h2>
             <p className="text-slate-600 max-w-2xl mx-auto">
-              我们致力于为您提供最有价值的内容和最佳的阅读体验
+              我们致力于为您提供最准确的移民信息和最专业的申请指导
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-8">
@@ -122,8 +122,8 @@ export default function Home() {
                 <span className="text-slate-600">✓</span>
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 mb-2">专业内容</h3>
-                <p className="text-slate-600">由行业专家撰写的高质量文章</p>
+                <h3 className="font-semibold text-slate-900 mb-2">专业可靠</h3>
+                <p className="text-slate-600">由移民专业人士提供的准确信息</p>
               </div>
             </div>
             <div className="flex items-start space-x-4">
@@ -132,7 +132,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900 mb-2">及时更新</h3>
-                <p className="text-slate-600">实时跟踪最新行业动态</p>
+                <p className="text-slate-600">实时跟踪加拿大移民政策变化</p>
               </div>
             </div>
             <div className="flex items-start space-x-4">
@@ -140,8 +140,8 @@ export default function Home() {
                 <span className="text-slate-600">✓</span>
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 mb-2">付费精品</h3>
-                <p className="text-slate-600">深度分析内容，物超所值</p>
+                <h3 className="font-semibold text-slate-900 mb-2">深度分析</h3>
+                <p className="text-slate-600">详细解读政策变化对申请的影响</p>
               </div>
             </div>
             <div className="flex items-start space-x-4">
@@ -150,7 +150,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900 mb-2">微信分享</h3>
-                <p className="text-slate-600">一键分享到微信，方便快捷</p>
+                <p className="text-slate-600">一键分享到微信，方便收藏</p>
               </div>
             </div>
           </div>
@@ -162,7 +162,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center">
             <h3 className="text-xl font-bold text-white mb-4">iDatabase</h3>
-            <p className="text-slate-400 mb-6">专业内容平台，助您在信息时代保持领先</p>
+            <p className="text-slate-400 mb-6">加拿大移民信息平台，助您在移民路上保持领先</p>
             <div className="flex justify-center space-x-6 text-sm">
               <Link href="/latest" className="hover:text-white">最新动态</Link>
               <Link href="/experience" className="hover:text-white">经验分享</Link>

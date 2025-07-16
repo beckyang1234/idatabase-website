@@ -1,8 +1,17 @@
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
+// 临时设置为 true 以便访问管理后台
+const isAuthenticated = true
+
 export default function AdminPage() {
+  // 如果未登录，重定向到管理员登录页面
+  if (!isAuthenticated) {
+    redirect('/admin-login')
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <nav className="bg-slate-900 text-white">
@@ -29,7 +38,7 @@ export default function AdminPage() {
           <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-white">
             <CardHeader>
               <CardTitle className="text-slate-900">文章管理</CardTitle>
-              <CardDescription className="text-slate-600">创建、编辑和管理文章内容</CardDescription>
+              <CardDescription className="text-slate-600">创建、编辑和管理移民信息文章</CardDescription>
             </CardHeader>
             <CardContent>
               <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white">管理文章</Button>
@@ -68,21 +77,21 @@ export default function AdminPage() {
 
           <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-white">
             <CardHeader>
-              <CardTitle className="text-slate-900">系统设置</CardTitle>
-              <CardDescription className="text-slate-600">网站配置和支付设置</CardDescription>
+              <CardTitle className="text-slate-900">收款管理</CardTitle>
+              <CardDescription className="text-slate-600">管理支付方式和收款账户</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white">系统设置</Button>
+              <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white">收款设置</Button>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-white">
             <CardHeader>
-              <CardTitle className="text-slate-900">内容审核</CardTitle>
-              <CardDescription className="text-slate-600">审核用户提交的内容</CardDescription>
+              <CardTitle className="text-slate-900">系统设置</CardTitle>
+              <CardDescription className="text-slate-600">网站配置和系统设置</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white">内容审核</Button>
+              <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white">系统设置</Button>
             </CardContent>
           </Card>
         </div>

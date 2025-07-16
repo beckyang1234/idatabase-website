@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Plus, Edit, Trash2, Eye } from 'lucide-react'
 
 interface Article {
   id: string
@@ -86,8 +85,7 @@ export default function ArticlesManagePage() {
           </div>
           <Button asChild className="bg-slate-900 hover:bg-slate-800 text-white">
             <Link href="/admin/articles/new">
-              <Plus className="w-4 h-4 mr-2" />
-              新建文章
+              ➕ 新建文章
             </Link>
           </Button>
         </div>
@@ -123,7 +121,7 @@ export default function ArticlesManagePage() {
           {filteredArticles.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
-                <p className="text-slate-500 mb-4">暂无文章</p>
+                <p className="text-slate-500 mb-4">暂无文章，开始创建您的第一篇文章吧！</p>
                 <Button asChild>
                   <Link href="/admin/articles/new">创建第一篇文章</Link>
                 </Button>
@@ -160,14 +158,12 @@ export default function ArticlesManagePage() {
                   <div className="flex items-center space-x-2">
                     <Button asChild size="sm" variant="outline">
                       <Link href={`/article/${article.id}`}>
-                        <Eye className="w-4 h-4 mr-1" />
-                        预览
+                        👁️ 预览
                       </Link>
                     </Button>
                     <Button asChild size="sm" variant="outline">
                       <Link href={`/admin/articles/edit/${article.id}`}>
-                        <Edit className="w-4 h-4 mr-1" />
-                        编辑
+                        ✏️ 编辑
                       </Link>
                     </Button>
                     <Button 
@@ -176,8 +172,7 @@ export default function ArticlesManagePage() {
                       onClick={() => deleteArticle(article.id)}
                       className="text-red-600 hover:text-red-700"
                     >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      删除
+                      🗑️ 删除
                     </Button>
                   </div>
                 </CardContent>

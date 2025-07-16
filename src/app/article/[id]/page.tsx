@@ -34,6 +34,66 @@ const getArticle = (id: string): Article => {
       views: 567,
       createdAt: '2025-01-14',
       author: { nickname: '金融分析师' }
+    },
+    '3': {
+      id: '3',
+      title: 'A股市场投资机会梳理',
+      content: '当前A股市场投资机会分析，重点关注的板块和个股推荐...',
+      isPaid: true,
+      price: 19.9,
+      views: 890,
+      createdAt: '2025-01-13',
+      author: { nickname: '投资顾问' }
+    },
+    '4': {
+      id: '4',
+      title: '十年交易心得：如何在市场中生存',
+      content: '分享十年交易经验，从新手到专业交易员的成长路径...',
+      isPaid: true,
+      price: 29.9,
+      views: 2345,
+      createdAt: '2025-01-12',
+      author: { nickname: '资深交易员' }
+    },
+    '5': {
+      id: '5',
+      title: '价值投资实战指南',
+      content: '巴菲特式价值投资方法在A股市场的实践应用...',
+      isPaid: false,
+      price: 0,
+      views: 1678,
+      createdAt: '2025-01-11',
+      author: { nickname: '价值投资者' }
+    },
+    '6': {
+      id: '6',
+      title: '美联储主席发表重要讲话',
+      content: '美联储主席在达沃斯论坛上发表了关于未来货币政策的重要讲话...',
+      isPaid: false,
+      price: 0,
+      views: 1156,
+      createdAt: '2025-01-15',
+      author: { nickname: '财经记者' }
+    },
+    '7': {
+      id: '7',
+      title: '中国央行调整MLF利率',
+      content: '中国人民银行调整中期借贷便利（MLF）操作利率，释放流动性信号...',
+      isPaid: true,
+      price: 15.0,
+      views: 789,
+      createdAt: '2025-01-14',
+      author: { nickname: '央行观察员' }
+    },
+    '8': {
+      id: '8',
+      title: '重要经济数据发布',
+      content: '国家统计局发布2024年四季度GDP数据，同比增长情况超预期...',
+      isPaid: false,
+      price: 0,
+      views: 2134,
+      createdAt: '2025-01-13',
+      author: { nickname: '数据分析师' }
     }
   }
   
@@ -47,6 +107,20 @@ const getArticle = (id: string): Article => {
     createdAt: '2025-01-15',
     author: { nickname: '作者' }
   }
+}
+
+// 生成静态路径
+export async function generateStaticParams() {
+  return [
+    { id: '1' },
+    { id: '2' },
+    { id: '3' },
+    { id: '4' },
+    { id: '5' },
+    { id: '6' },
+    { id: '7' },
+    { id: '8' }
+  ]
 }
 
 interface PageProps {
@@ -71,7 +145,9 @@ export default async function ArticlePage({ params }: PageProps) {
               <Link href="/latest" className="text-slate-600 hover:text-slate-900">最新动态</Link>
               <Link href="/experience" className="text-slate-600 hover:text-slate-900">经验分享</Link>
               <Link href="/timeline" className="text-slate-600 hover:text-slate-900">时间线</Link>
-              <Button variant="outline" size="sm">登录</Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/login">登录</Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -108,11 +184,11 @@ export default async function ArticlePage({ params }: PageProps) {
             <div className="prose max-w-none">
               <p className="text-slate-700 leading-7">{article.content}</p>
               
-              {article.isPaid && article.id === '2' && (
+              {article.isPaid && (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mt-8">
                   <div className="text-center">
                     <h3 className="text-lg font-semibold text-slate-900 mb-2">解锁完整内容</h3>
-                    <p className="text-slate-600 mb-4">查看完整的美联储政策分析和投资建议</p>
+                    <p className="text-slate-600 mb-4">查看完整的分析和投资建议</p>
                     <div className="flex items-center justify-center space-x-4">
                       <span className="text-2xl font-bold text-blue-600">¥{article.price}</span>
                       <Button size="lg" className="bg-blue-600 hover:bg-blue-700">

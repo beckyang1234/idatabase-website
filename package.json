@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "postbuild": "mkdir -p .vercel/output && cp -r out/* .vercel/output/",
     "start": "next start",
     "lint": "next lint"
   },

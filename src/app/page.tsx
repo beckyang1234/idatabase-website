@@ -14,41 +14,65 @@ interface Article {
 }
 
 export default function Home() {
-  const [articles, setArticles] = useState<Article[]>([])  // 替换 any[]
+  const [articles, setArticles] = useState<Article[]>([])
   const [showDonation, setShowDonation] = useState(false)
   const [isClient, setIsClient] = useState(false)
+  const [isLoading, setIsLoading] = useState(true) // 添加加载状态
 
   // 修复hydration error - 确保客户端渲染一致性
   useEffect(() => {
     setIsClient(true)
     
-    // 从localStorage加载文章数据
-    const savedArticles = localStorage.getItem('articles')
-    if (savedArticles) {
-      setArticles(JSON.parse(savedArticles))
-    } else {
-      const sampleData: Article[] = [  // 添加类型
-        {
-          id: 1,
-          title: '9月11日荐股龙虎榜分析',
-          content: '今日龙虎榜数据显示，机构席位买入较为活跃，主要集中在新能源、医药、科技等板块。其中，宁德时代、比亚迪等个股获得机构重点关注。\n\n重点数据：\n• 机构买入净额：15.2亿元\n• 游资买入净额：8.7亿元\n• 活跃个股数量：156只\n\n建议投资者关注资金流向，理性投资。',
-          imageUrl: '',
-          createdAt: '2025-09-11',
-          views: 1256,
-          likes: 89
+    // 只在客户端操作localStorage
+    if (typeof window !== 'undefined') {
+      const savedArticles = localStorage.getItem('articles')
+      if (savedArticles) {
+        try {
+          setArticles(JSON.parse(savedArticles))
+        } catch (error) {
+          console.error('Failed to parse articles:', error)
+          // 如果解析失败，使用默认数据
+          const sampleData: Article[] = [
+            {
+              id: 1,
+              title: '9月11日荐股龙虎榜分析',
+              content: '今日龙虎榜数据显示，机构席位买入较为活跃，主要集中在新能源、医药、科技等板块。其中，宁德时代、比亚迪等个股获得机构重点关注。\n\n重点数据：\n• 机构买入净额：15.2亿元\n• 游资买入净额：8.7亿元\n• 活跃个股数量：156只\n\n建议投资者关注资金流向，理性投资。',
+              imageUrl: '',
+              createdAt: '2025-09-11',
+              views: 1256,
+              likes: 89
+            }
+          ]
+          setArticles(sampleData)
+          localStorage.setItem('articles', JSON.stringify(sampleData))
         }
-      ]
-      setArticles(sampleData)
-      localStorage.setItem('articles', JSON.stringify(sampleData))
+      } else {
+        // 如果没有保存的文章，使用默认数据
+        const sampleData: Article[] = [
+          {
+            id: 1,
+            title: '9月11日荐股龙虎榜分析',
+            content: '今日龙虎榜数据显示，机构席位买入较为活跃，主要集中在新能源、医药、科技等板块。其中，宁德时代、比亚迪等个股获得机构重点关注。\n\n重点数据：\n• 机构买入净额：15.2亿元\n• 游资买入净额：8.7亿元\n• 活跃个股数量：156只\n\n建议投资者关注资金流向，理性投资。',
+            imageUrl: '',
+            createdAt: '2025-09-11',
+            views: 1256,
+            likes: 89
+          }
+        ]
+        setArticles(sampleData)
+        localStorage.setItem('articles', JSON.stringify(sampleData))
+      }
     }
+    
+    setIsLoading(false) // 完成加载
   }, [])
 
-  // 防止hydration error的加载状态
-  if (!isClient) {
+  // 加载中状态
+  if (isLoading) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
         <div style={{ 
-          backgroundColor: '#dc2626', 
+          backgroundColor: '#ea580c', 
           color: '#fff', 
           textAlign: 'center', 
           padding: '10px 0',
@@ -72,9 +96,9 @@ export default function Home() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-      {/* 顶部标题栏 - 橙色主题 */}
+      {/* 顶部标题栏 - 红色主题 */}
       <div style={{ 
-        backgroundColor: '#ea580c', 
+        backgroundColor: '#dc2626', 
         color: '#fff', 
         textAlign: 'center', 
         padding: '10px 0',
@@ -84,9 +108,9 @@ export default function Home() {
         荐股龙虎榜 (荐股大赛@jiangudasai)
       </div>
 
-      {/* 导航栏 - 黑色主题 */}
+      {/* 导航栏 - 橙色主题 */}
       <nav style={{ 
-        backgroundColor: '#1f2937', 
+        backgroundColor: '#ea580c', 
         color: '#fff',
         padding: '0 20px'
       }}>
@@ -99,9 +123,11 @@ export default function Home() {
           height: '50px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '500' }}>荐股龙虎榜</h1>
+            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '500' }}>龙虎榜分析</h1>
             <div style={{ display: 'flex', gap: '15px', fontSize: '14px' }}>
-              <span style={{ color: '#d1d5db', cursor: 'pointer' }}>公开、真实、可跟随</span>
+              <span style={{ color: '#fff', cursor: 'pointer' }}>首页</span>
+              <span style={{ color: '#fff', cursor: 'pointer' }}>分析</span>
+              <span style={{ color: '#fff', cursor: 'pointer' }}>数据</span>
             </div>
           </div>
           

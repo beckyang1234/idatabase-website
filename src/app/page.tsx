@@ -101,9 +101,7 @@ export default function Home() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '500' }}>龙虎榜分析</h1>
             <div style={{ display: 'flex', gap: '15px', fontSize: '14px' }}>
-              <span style={{ color: '#d1d5db', cursor: 'pointer' }}>首页</span>
-              <span style={{ color: '#d1d5db', cursor: 'pointer' }}>分析</span>
-              <span style={{ color: '#d1d5db', cursor: 'pointer' }}>数据</span>
+              <span style={{ color: '#d1d5db', cursor: 'pointer' }}>公开、真实、可跟随</span>
             </div>
           </div>
           

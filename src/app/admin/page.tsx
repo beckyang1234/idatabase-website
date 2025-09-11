@@ -368,7 +368,7 @@ export default function AdminPage() {
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) => setFormData({...formData, image: e.target.files?. || null})}
+                onChange={(e) => setFormData({...formData, image: e.target.files?.[0] || null})}
                 style={{ 
                   width: '100%', 
                   padding: '12px 16px', 

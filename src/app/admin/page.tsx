@@ -97,7 +97,7 @@ export default function AdminPage() {
       title: formData.title,
       content: formData.content,
       imageUrl: formData.image ? URL.createObjectURL(formData.image) : '',
-      createdAt: new Date().toISOString().split('T'),
+      createdAt: new Date().toISOString().split('T')[0],
       views: Math.floor(Math.random() * 1000) + 100,
       likes: Math.floor(Math.random() * 100) + 10
     }

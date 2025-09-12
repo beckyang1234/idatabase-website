@@ -15,6 +15,13 @@ interface Article {
   likes: number
 }
 
+// 静态导出需要的函数
+export async function generateStaticParams() {
+  // 返回空数组，因为我们的文章是动态创建的
+  // 在实际访问时会fallback到客户端渲染
+  return []
+}
+
 export default function ArticlePage() {
   const params = useParams()
   const [article, setArticle] = useState<Article | null>(null)
@@ -40,6 +47,16 @@ export default function ArticlePage() {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
         <div style={{ 
+          backgroundColor: '#dc2626', 
+          color: '#fff', 
+          textAlign: 'center', 
+          padding: '10px 0',
+          fontWeight: 'bold',
+          borderBottom: '2px solid #b91c1c'
+        }}>
+          荐股龙虎榜 (荐股大赛@jiangudasai)
+        </div>
+        <div style={{ 
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'center', 
@@ -56,15 +73,57 @@ export default function ArticlePage() {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
         <div style={{ 
+          backgroundColor: '#dc2626', 
+          color: '#fff', 
+          textAlign: 'center', 
+          padding: '10px 0',
+          fontWeight: 'bold',
+          borderBottom: '2px solid #b91c1c'
+        }}>
+          荐股龙虎榜 (荐股大赛@jiangudasai)
+        </div>
+        <nav style={{ 
+          backgroundColor: '#ea580c', 
+          color: '#fff',
+          padding: '0 20px'
+        }}>
+          <div style={{ 
+            maxWidth: '1200px', 
+            margin: '0 auto',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            height: '50px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <Link href="/" style={{ color: '#fff', textDecoration: 'none', fontSize: '18px', fontWeight: '500' }}>
+                龙虎榜分析
+              </Link>
+            </div>
+          </div>
+        </nav>
+        <div style={{ 
           display: 'flex', 
           flexDirection: 'column',
           justifyContent: 'center', 
           alignItems: 'center', 
-          height: '200px',
+          height: '300px',
           color: '#6b7280'
         }}>
-          <p>文章未找到</p>
-          <Link href="/" style={{ color: '#2563eb', marginTop: '16px' }}>
+          <p style={{ fontSize: '18px', marginBottom: '16px' }}>文章未找到</p>
+          <Link 
+            href="/" 
+            style={{ 
+              textDecoration: 'none',
+              backgroundColor: '#2563eb',
+              color: 'white',
+              padding: '12px 24px',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              display: 'inline-block'
+            }}
+          >
             返回首页
           </Link>
         </div>
@@ -176,19 +235,6 @@ export default function ArticlePage() {
               ) : (
                 <div style={{ whiteSpace: 'pre-line' }}>{article.content}</div>
               )}
-            </div>
-
-            {/* 免责声明 */}
-            <div style={{
-              backgroundColor: '#fef3c7',
-              border: '1px solid #fbbf24',
-              borderRadius: '6px',
-              padding: '16px',
-              fontSize: '14px',
-              color: '#92400e',
-              fontWeight: '500'
-            }}>
-              本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。
             </div>
           </div>
         </article>

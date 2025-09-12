@@ -4,10 +4,27 @@ import Image from 'next/image'
 import { supabase, type Article } from '@/lib/supabase'
 
 // 截取摘要的函数
-const getExcerpt = (content: string, maxLines: number = 3) => {
-  const lines = content.split('\n').filter(line => line.trim() !== '')
-  const excerpt = lines.slice(0, maxLines).join('\n')
-  return excerpt.length < content.length ? excerpt + '...' : excerpt
+// 修改截取摘要的函数，限制为一行
+const getExcerpt = (content: string, maxLength: number = 80) => {
+  // 移除HTML标签和换行符
+  const cleanText = content
+    .replace(/<[^>]*>/g, '') // 移除HTML标签
+    .replace(/\n+/g, ' ')    // 将换行符替换为空格
+    .trim()                  // 去除首尾空格
+  
+  if (cleanText.length <= maxLength) {
+    return cleanText
+  }
+  
+  // 在合适的位置截断，避免截断单词
+  const truncated = cleanText.substring(0, maxLength)
+  const lastSpace = truncated.lastIndexOf(' ')
+  
+  if (lastSpace > maxLength * 0.8) {
+    return truncated.substring(0, lastSpace) + '...'
+  }
+  
+  return truncated + '...'
 }
 
 export default function Home() {
@@ -220,11 +237,11 @@ export default function Home() {
                     {article.title}
                   </h2>
                   
+
                   {/* 文章内容 */}
                   <div style={{ 
                     color: '#4b5563', 
                     lineHeight: '1.7', 
-                    whiteSpace: 'pre-line',
                     marginBottom: '20px',
                     fontSize: '15px'
                   }}>
@@ -233,13 +250,21 @@ export default function Home() {
                       article.html_content ? (
                         <div dangerouslySetInnerHTML={{ __html: article.html_content }} />
                       ) : (
-                        <div>{article.content}</div>
+                        <div style={{ whiteSpace: 'pre-line' }}>{article.content}</div>
                       )
                     ) : (
-                      // 显示摘要
-                      getExcerpt(article.content, 3)
+                      // 显示一行摘要
+                      <div style={{ 
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap' // 强制单行显示
+                        }}>
+                        {getExcerpt(article.content, 100)}
+                      </div>
                     )}
                   </div>
+
+
 
                   {/* 阅读更多/收起按钮 */}
                   <div style={{ marginBottom: '20px' }}>

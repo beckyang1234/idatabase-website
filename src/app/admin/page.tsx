@@ -12,6 +12,22 @@ interface FormData {
   image: File | null
 }
 
+// 图片转换为base64的函数
+const convertImageToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result)
+      } else {
+        reject('Failed to convert image')
+      }
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 // 简单的富文本编辑器工具栏
 const SimpleEditor = ({ value, onChange }: { value: string, onChange: (value: string) => void }) => {
   const editorRef = useRef<HTMLDivElement>(null)
@@ -243,6 +259,26 @@ export default function AdminPage() {
     setIsSaving(true)
 
     try {
+      // 处理图片上传
+      let imageUrl = ''
+      if (formData.image) {
+        // 检查文件大小（限制为2MB）
+        if (formData.image.size > 2 * 1024 * 1024) {
+          alert('图片大小不能超过2MB')
+          setIsSaving(false)
+          return
+        }
+        
+        try {
+          imageUrl = await convertImageToBase64(formData.image)
+        } catch (error) {
+          console.error('Image conversion failed:', error)
+          alert('图片处理失败，请重试')
+          setIsSaving(false)
+          return
+        }
+      }
+
       // 检查是否已包含免责声明，简单文本检查
       const disclaimerText = '本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。'
       let finalContent = formData.htmlContent
@@ -255,7 +291,7 @@ export default function AdminPage() {
         title: formData.title,
         content: formData.content || formData.htmlContent.replace(/<[^>]*>/g, ''),
         html_content: finalContent,
-        image_url: '', // 暂时不支持图片上传，后续可扩展
+        image_url: imageUrl, // 使用base64图片数据
         created_at: formData.createdAt,
         views: Math.floor(Math.random() * 1000) + 100,
         likes: Math.floor(Math.random() * 100) + 10
@@ -326,6 +362,26 @@ export default function AdminPage() {
     setIsSaving(true)
 
     try {
+      // 处理图片上传
+      let imageUrl = editingArticle.image_url // 保持原有图片
+      if (formData.image) {
+        // 检查文件大小（限制为2MB）
+        if (formData.image.size > 2 * 1024 * 1024) {
+          alert('图片大小不能超过2MB')
+          setIsSaving(false)
+          return
+        }
+        
+        try {
+          imageUrl = await convertImageToBase64(formData.image)
+        } catch (error) {
+          console.error('Image conversion failed:', error)
+          alert('图片处理失败，请重试')
+          setIsSaving(false)
+          return
+        }
+      }
+
       // 检查是否已包含免责声明
       const disclaimerText = '本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。'
       let finalContent = formData.htmlContent
@@ -340,6 +396,7 @@ export default function AdminPage() {
           title: formData.title,
           content: formData.content || formData.htmlContent.replace(/<[^>]*>/g, ''),
           html_content: finalContent,
+          image_url: imageUrl,
           created_at: formData.createdAt,
         })
         .eq('id', editingArticle.id)
@@ -628,23 +685,27 @@ export default function AdminPage() {
             
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>
-                上传图片（暂不支持）
+                上传图片
               </label>
               <input
                 type="file"
                 accept="image/*"
-                disabled
+                onChange={(e) => setFormData({...formData, image: e.target.files?.[0] || null})}
                 style={{ 
                   width: '100%', 
                   padding: '12px 16px', 
                   border: '1px solid #d1d5db', 
-                  borderRadius: '6px',
-                  opacity: 0.5
+                  borderRadius: '6px'
                 }}
               />
               <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
-                图片上传功能将在后续版本中添加
+                支持 JPG、PNG 格式，文件大小不超过 2MB
               </div>
+              {formData.image && (
+                <div style={{ marginTop: '8px', fontSize: '12px', color: '#059669' }}>
+                  已选择：{formData.image.name}
+                </div>
+              )}
             </div>
             
             <div style={{ display: 'flex', gap: '12px' }}>

@@ -1,12 +1,18 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
+// 动态导入富文本编辑器（避免SSR问题）
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
+import 'react-quill/dist/quill.snow.css'
 
 // 定义文章类型接口
 interface Article {
   id: number
   title: string
   content: string
+  htmlContent?: string
   imageUrl: string
   createdAt: string
   views: number
@@ -17,8 +23,29 @@ interface Article {
 interface FormData {
   title: string
   content: string
+  htmlContent: string
+  createdAt: string
   image: File | null
 }
+
+// 富文本编辑器配置
+const quillModules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    ['blockquote', 'code-block'],
+    ['link'],
+    ['clean']
+  ],
+}
+
+const quillFormats = [
+  'header', 'bold', 'italic', 'underline', 'strike',
+  'color', 'background', 'list', 'bullet', 'blockquote', 
+  'code-block', 'link'
+]
 
 export default function AdminPage() {
   const [articles, setArticles] = useState<Article[]>([])
@@ -26,20 +53,20 @@ export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingArticle, setEditingArticle] = useState<Article | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [isClient, setIsClient] = useState(false)
-  const [isLoading, setIsLoading] = useState(true) // 新增加载状态
   
   const [formData, setFormData] = useState<FormData>({
     title: '',
     content: '',
+    htmlContent: '',
+    createdAt: new Date().toISOString().split('T')[0],
     image: null
   })
 
   useEffect(() => {
-    // 确保在客户端才进行localStorage操作
     setIsClient(true)
     
-    // 检查localStorage中的认证状态
     if (typeof window !== 'undefined') {
       const auth = localStorage.getItem('adminAuth')
       const isAuth = auth === 'true'
@@ -50,7 +77,7 @@ export default function AdminPage() {
       }
     }
     
-    setIsLoading(false) // 加载完成
+    setIsLoading(false)
   }, [])
 
   const loadArticles = () => {
@@ -87,24 +114,35 @@ export default function AdminPage() {
   }
 
   const handleAddArticle = () => {
-    if (!formData.title || !formData.content) {
+    if (!formData.title || !formData.htmlContent) {
       alert('请填写标题和内容')
       return
     }
 
+    // 添加免责声明
+    const contentWithDisclaimer = formData.htmlContent + 
+      '<div style="background-color: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; padding: 16px; margin-top: 24px; font-size: 14px; color: #92400e; font-weight: 500;">本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。</div>'
+
     const newArticle: Article = {
       id: Date.now(),
       title: formData.title,
-      content: formData.content,
+      content: formData.content || formData.htmlContent.replace(/<[^>]*>/g, ''), // 纯文本备份
+      htmlContent: contentWithDisclaimer,
       imageUrl: formData.image ? URL.createObjectURL(formData.image) : '',
-      createdAt: new Date().toISOString().split('T')[0],
+      createdAt: formData.createdAt,
       views: Math.floor(Math.random() * 1000) + 100,
       likes: Math.floor(Math.random() * 100) + 10
     }
 
     const newArticles = [newArticle, ...articles]
     saveArticles(newArticles)
-    setFormData({ title: '', content: '', image: null })
+    setFormData({ 
+      title: '', 
+      content: '', 
+      htmlContent: '', 
+      createdAt: new Date().toISOString().split('T')[0],
+      image: null 
+    })
     setShowAddForm(false)
   }
 
@@ -113,23 +151,31 @@ export default function AdminPage() {
     setFormData({
       title: article.title,
       content: article.content,
+      htmlContent: article.htmlContent || article.content,
+      createdAt: article.createdAt,
       image: null
     })
     setShowAddForm(false)
   }
 
   const handleUpdateArticle = () => {
-    if (!formData.title || !formData.content || !editingArticle) {
+    if (!formData.title || !formData.htmlContent || !editingArticle) {
       alert('请填写标题和内容')
       return
     }
+
+    // 添加免责声明
+    const contentWithDisclaimer = formData.htmlContent + 
+      '<div style="background-color: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; padding: 16px; margin-top: 24px; font-size: 14px; color: #92400e; font-weight: 500;">本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。</div>'
 
     const updatedArticles = articles.map(article => 
       article.id === editingArticle.id 
         ? {
             ...article,
             title: formData.title,
-            content: formData.content,
+            content: formData.content || formData.htmlContent.replace(/<[^>]*>/g, ''),
+            htmlContent: contentWithDisclaimer,
+            createdAt: formData.createdAt,
             imageUrl: formData.image ? URL.createObjectURL(formData.image) : article.imageUrl
           }
         : article
@@ -137,7 +183,13 @@ export default function AdminPage() {
 
     saveArticles(updatedArticles)
     setEditingArticle(null)
-    setFormData({ title: '', content: '', image: null })
+    setFormData({ 
+      title: '', 
+      content: '', 
+      htmlContent: '', 
+      createdAt: new Date().toISOString().split('T')[0],
+      image: null 
+    })
   }
 
   const handleDeleteArticle = (id: number) => {
@@ -155,7 +207,6 @@ export default function AdminPage() {
     setPassword('')
   }
 
-  // 加载中状态
   if (isLoading) {
     return (
       <div style={{ 
@@ -170,7 +221,6 @@ export default function AdminPage() {
     )
   }
 
-  // 未认证状态
   if (!isAuthenticated) {
     return (
       <div style={{ 
@@ -271,7 +321,13 @@ export default function AdminPage() {
             onClick={() => {
               setShowAddForm(!showAddForm)
               setEditingArticle(null)
-              setFormData({ title: '', content: '', image: null })
+              setFormData({ 
+                title: '', 
+                content: '', 
+                htmlContent: '', 
+                createdAt: new Date().toISOString().split('T')[0],
+                image: null 
+              })
             }}
             style={{ 
               backgroundColor: '#2563eb', 
@@ -291,7 +347,13 @@ export default function AdminPage() {
             <button 
               onClick={() => {
                 setEditingArticle(null)
-                setFormData({ title: '', content: '', image: null })
+                setFormData({ 
+                  title: '', 
+                  content: '', 
+                  htmlContent: '', 
+                  createdAt: new Date().toISOString().split('T')[0],
+                  image: null 
+                })
               }}
               style={{ 
                 backgroundColor: '#6b7280', 
@@ -310,7 +372,7 @@ export default function AdminPage() {
         </div>
 
         {/* 发布/编辑表单 */}
-        {(showAddForm || editingArticle) && (
+        {(showAddForm || editingArticle) && isClient && (
           <div style={{ 
             backgroundColor: 'white', 
             border: '1px solid #e5e7eb', 
@@ -340,25 +402,40 @@ export default function AdminPage() {
                 placeholder="输入文章标题"
               />
             </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>
+                发布日期
+              </label>
+              <input
+                type="date"
+                value={formData.createdAt}
+                onChange={(e) => setFormData({...formData, createdAt: e.target.value})}
+                style={{ 
+                  width: '200px', 
+                  padding: '12px 16px', 
+                  border: '1px solid #d1d5db', 
+                  borderRadius: '6px',
+                  fontSize: '16px'
+                }}
+              />
+            </div>
             
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>
                 文章内容
               </label>
-              <textarea
-                value={formData.content}
-                onChange={(e) => setFormData({...formData, content: e.target.value})}
-                rows={10}
-                style={{ 
-                  width: '100%', 
-                  padding: '12px 16px', 
-                  border: '1px solid #d1d5db', 
-                  borderRadius: '6px',
-                  fontSize: '16px',
-                  resize: 'vertical'
-                }}
-                placeholder="输入文章内容"
-              />
+              <div style={{ minHeight: '300px' }}>
+                <ReactQuill
+                  theme="snow"
+                  value={formData.htmlContent}
+                  onChange={(content) => setFormData({...formData, htmlContent: content})}
+                  modules={quillModules}
+                  formats={quillFormats}
+                  style={{ height: '250px', marginBottom: '50px' }}
+                  placeholder="输入文章内容，支持格式化文本..."
+                />
+              </div>
             </div>
             
             <div style={{ marginBottom: '20px' }}>
@@ -399,7 +476,13 @@ export default function AdminPage() {
                 onClick={() => {
                   setShowAddForm(false)
                   setEditingArticle(null)
-                  setFormData({ title: '', content: '', image: null })
+                  setFormData({ 
+                    title: '', 
+                    content: '', 
+                    htmlContent: '', 
+                    createdAt: new Date().toISOString().split('T')[0],
+                    image: null 
+                  })
                 }}
                 style={{ 
                   backgroundColor: '#6b7280', 

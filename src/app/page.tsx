@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import Image from 'next/image'
 
 // 定义文章类型接口
@@ -7,32 +8,55 @@ interface Article {
   id: number
   title: string
   content: string
+  htmlContent?: string
   imageUrl: string
   createdAt: string
   views: number
   likes: number
 }
 
+// 截取摘要的函数
+const getExcerpt = (content: string, maxLines: number = 3) => {
+  const lines = content.split('\n').filter(line => line.trim() !== '')
+  const excerpt = lines.slice(0, maxLines).join('\n')
+  return excerpt.length < content.length ? excerpt + '...' : excerpt
+}
+
 export default function Home() {
   const [articles, setArticles] = useState<Article[]>([])
   const [showDonation, setShowDonation] = useState(false)
-  const [isClient, setIsClient] = useState(false)
-  const [isLoading, setIsLoading] = useState(true) // 添加加载状态
+  const [isLoading, setIsLoading] = useState(true)
 
-  // 修复hydration error - 确保客户端渲染一致性
   useEffect(() => {
-    setIsClient(true)
-    
-    // 只在客户端操作localStorage
     if (typeof window !== 'undefined') {
+      // 详细调试信息
+      console.log('=== DEBUG INFO ===');
+      console.log('Current URL:', window.location.href);
+      console.log('Current domain:', window.location.hostname);
+      
+      // 检查localStorage
+      console.log('LocalStorage keys:', Object.keys(localStorage));
+      
+      // 强制清除所有存储（如果需要）
+      // localStorage.clear();
+      // sessionStorage.clear();
+      
       const savedArticles = localStorage.getItem('articles')
       if (savedArticles) {
         try {
-          setArticles(JSON.parse(savedArticles))
+          const parsedArticles = JSON.parse(savedArticles)
+          // 验证数据格式和内容
+          const validArticles = parsedArticles.filter((article: any) => 
+            article && 
+            typeof article.title === 'string' && 
+            typeof article.content === 'string' &&
+            !article.title.includes('CRS') && // 过滤可疑内容
+            !article.content.includes('CRS')
+          )
+          setArticles(validArticles)
         } catch (error) {
           console.error('Failed to parse articles:', error)
-          // 如果解析失败，使用默认数据
-          const sampleData: Article[] = [
+          const defaultData: Article[] = [
             {
               id: 1,
               title: '9月11日荐股龙虎榜分析',
@@ -43,12 +67,11 @@ export default function Home() {
               likes: 89
             }
           ]
-          setArticles(sampleData)
-          localStorage.setItem('articles', JSON.stringify(sampleData))
+          setArticles(defaultData)
+          localStorage.setItem('articles', JSON.stringify(defaultData))
         }
       } else {
-        // 如果没有保存的文章，使用默认数据
-        const sampleData: Article[] = [
+        const defaultData: Article[] = [
           {
             id: 1,
             title: '9月11日荐股龙虎榜分析',
@@ -59,20 +82,19 @@ export default function Home() {
             likes: 89
           }
         ]
-        setArticles(sampleData)
-        localStorage.setItem('articles', JSON.stringify(sampleData))
+        setArticles(defaultData)
+        localStorage.setItem('articles', JSON.stringify(defaultData))
       }
     }
     
-    setIsLoading(false) // 完成加载
+    setIsLoading(false)
   }, [])
 
-  // 加载中状态
   if (isLoading) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
         <div style={{ 
-          backgroundColor: '#ea580c', 
+          backgroundColor: '#dc2626', 
           color: '#fff', 
           textAlign: 'center', 
           padding: '10px 0',
@@ -96,7 +118,7 @@ export default function Home() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-      {/* 顶部标题栏 - 红色主题 */}
+      {/* 顶部标题栏 */}
       <div style={{ 
         backgroundColor: '#dc2626', 
         color: '#fff', 
@@ -108,7 +130,7 @@ export default function Home() {
         荐股龙虎榜 (荐股大赛@jiangudasai)
       </div>
 
-      {/* 导航栏 - 橙色主题 */}
+      {/* 导航栏 */}
       <nav style={{ 
         backgroundColor: '#ea580c', 
         color: '#fff',
@@ -123,9 +145,11 @@ export default function Home() {
           height: '50px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '500' }}>荐股大赛（X账号@jiangudasai）</h1>
+            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '500' }}>龙虎榜分析</h1>
             <div style={{ display: 'flex', gap: '15px', fontSize: '14px' }}>
-              <span style={{ color: '#fff', cursor: 'pointer' }}>真实、公开、可跟随</span>
+              <span style={{ color: '#fff', cursor: 'pointer' }}>首页</span>
+              <span style={{ color: '#fff', cursor: 'pointer' }}>分析</span>
+              <span style={{ color: '#fff', cursor: 'pointer' }}>数据</span>
             </div>
           </div>
           
@@ -160,17 +184,18 @@ export default function Home() {
               borderRadius: '6px', 
               marginBottom: '20px',
               overflow: 'hidden',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+              transition: 'box-shadow 0.2s ease'
             }}>
-              {/* 文章图片 - 使用Next.js Image组件 */}
+              {/* 文章图片 */}
               {article.imageUrl && (
                 <div style={{ borderBottom: '1px solid #e5e7eb' }}>
                   <Image 
                     src={article.imageUrl} 
                     alt={article.title}
                     width={1200}
-                    height={400}
-                    style={{ width: '100%', height: 'auto', display: 'block' }}
+                    height={300}
+                    style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }}
                   />
                 </div>
               )}
@@ -184,9 +209,21 @@ export default function Home() {
                   color: '#1f2937',
                   lineHeight: '1.4'
                 }}>
-                  {article.title}
+                  <Link 
+                    href={`/article/${article.id}`}
+                    style={{ 
+                      color: '#1f2937', 
+                      textDecoration: 'none',
+                      transition: 'color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#2563eb'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#1f2937'}
+                  >
+                    {article.title}
+                  </Link>
                 </h2>
                 
+                {/* 文章摘要 */}
                 <div style={{ 
                   color: '#4b5563', 
                   lineHeight: '1.7', 
@@ -194,7 +231,29 @@ export default function Home() {
                   marginBottom: '20px',
                   fontSize: '15px'
                 }}>
-                  {article.content}
+                  {getExcerpt(article.content, 3)}
+                </div>
+
+                {/* 阅读更多按钮 */}
+                <div style={{ marginBottom: '20px' }}>
+                  <Link 
+                    href={`/article/${article.id}`}
+                    style={{
+                      display: 'inline-block',
+                      backgroundColor: '#2563eb',
+                      color: 'white',
+                      padding: '8px 16px',
+                      borderRadius: '4px',
+                      textDecoration: 'none',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      transition: 'background-color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+                  >
+                    阅读全文 →
+                  </Link>
                 </div>
                 
                 <div style={{ 

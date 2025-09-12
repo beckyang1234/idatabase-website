@@ -1,18 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-
-// 定义文章类型接口
-interface Article {
-  id: number
-  title: string
-  content: string
-  htmlContent?: string
-  imageUrl: string
-  createdAt: string
-  views: number
-  likes: number
-}
+import { supabase, type Article } from '@/lib/supabase'
 
 // 截取摘要的函数
 const getExcerpt = (content: string, maxLines: number = 3) => {
@@ -26,33 +15,31 @@ export default function Home() {
   const [showDonation, setShowDonation] = useState(false)
   const [expandedArticleId, setExpandedArticleId] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
+  // 从Supabase加载文章
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedArticles = localStorage.getItem('articles')
-      if (savedArticles) {
-        try {
-          const parsedArticles: Article[] = JSON.parse(savedArticles)
-          const validArticles = parsedArticles.filter((article: Article) => 
-            article && 
-            typeof article.title === 'string' && 
-            typeof article.content === 'string' &&
-            !article.title.includes('CRS') && 
-            !article.content.includes('CRS')
-          )
-          setArticles(validArticles)
-        } catch (error) {
-          console.error('Failed to parse articles:', error)
-          // 如果解析失败，设置空数组而不是默认数据
-          setArticles([])
+    const loadArticles = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('articles')
+          .select('*')
+          .order('created_at', { ascending: false })
+
+        if (error) {
+          throw error
         }
-      } else {
-        // 如果没有保存的文章，设置空数组而不是默认数据
-        setArticles([])
+
+        setArticles(data || [])
+      } catch (err) {
+        console.error('Error loading articles:', err)
+        setError('加载文章失败，请刷新页面重试')
+      } finally {
+        setIsLoading(false)
       }
     }
-    
-    setIsLoading(false)
+
+    loadArticles()
   }, [])
 
   const toggleArticle = (articleId: number) => {
@@ -80,6 +67,47 @@ export default function Home() {
           color: '#6b7280'
         }}>
           加载中...
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+        <div style={{ 
+          backgroundColor: '#dc2626', 
+          color: '#fff', 
+          textAlign: 'center', 
+          padding: '10px 0',
+          fontWeight: 'bold',
+          borderBottom: '2px solid #b91c1c'
+        }}>
+          荐股龙虎榜 (荐股大赛@jiangudasai)
+        </div>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '200px',
+          color: '#dc2626',
+          flexDirection: 'column' as const
+        }}>
+          <p>{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{
+              backgroundColor: '#dc2626',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              marginTop: '12px'
+            }}
+          >
+            重新加载
+          </button>
         </div>
       </div>
     )
@@ -114,11 +142,11 @@ export default function Home() {
           height: '50px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '500' }}>龙虎榜分析</h1>
+            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '500' }}>荐股龙虎榜（X账号jiangudasai）</h1>
             <div style={{ display: 'flex', gap: '15px', fontSize: '14px' }}>
-              <span style={{ color: '#fff', cursor: 'pointer' }}>首页</span>
-              <span style={{ color: '#fff', cursor: 'pointer' }}>分析</span>
-              <span style={{ color: '#fff', cursor: 'pointer' }}>数据</span>
+              <span style={{ color: '#fff', cursor: 'pointer' }}>真实</span>
+              <span style={{ color: '#fff', cursor: 'pointer' }}>公开</span>
+              <span style={{ color: '#fff', cursor: 'pointer' }}>可跟随</span>
             </div>
           </div>
           
@@ -159,10 +187,10 @@ export default function Home() {
                 transition: 'box-shadow 0.2s ease'
               }}>
                 {/* 文章图片 */}
-                {article.imageUrl && (
+                {article.image_url && (
                   <div style={{ borderBottom: '1px solid #e5e7eb' }}>
                     <Image 
-                      src={article.imageUrl} 
+                      src={article.image_url} 
                       alt={article.title}
                       width={1200}
                       height={isExpanded ? 400 : 200}
@@ -201,14 +229,14 @@ export default function Home() {
                     fontSize: '15px'
                   }}>
                     {isExpanded ? (
-                      // 显示完整内容（已包含免责声明）
-                      article.htmlContent ? (
-                        <div dangerouslySetInnerHTML={{ __html: article.htmlContent }} />
+                      // 显示完整内容
+                      article.html_content ? (
+                        <div dangerouslySetInnerHTML={{ __html: article.html_content }} />
                       ) : (
                         <div>{article.content}</div>
                       )
                     ) : (
-                      // 显示摘要（从content字段获取，不包含HTML）
+                      // 显示摘要
                       getExcerpt(article.content, 3)
                     )}
                   </div>
@@ -216,7 +244,7 @@ export default function Home() {
                   {/* 阅读更多/收起按钮 */}
                   <div style={{ marginBottom: '20px' }}>
                     <button 
-                      onClick={() => toggleArticle(article.id)}
+                      onClick={() => toggleArticle(article.id!)}
                       style={{
                         backgroundColor: '#2563eb',
                         color: 'white',
@@ -235,8 +263,6 @@ export default function Home() {
                     </button>
                   </div>
 
-                  {/* 移除这里的免责声明，因为已经在htmlContent中了 */}
-                  
                   <div style={{ 
                     fontSize: '13px', 
                     color: '#6b7280', 
@@ -246,7 +272,7 @@ export default function Home() {
                     justifyContent: 'space-between',
                     alignItems: 'center'
                   }}>
-                    <span>发布时间：{article.createdAt}</span>
+                    <span>发布时间：{article.created_at}</span>
                     <div style={{ display: 'flex', gap: '12px' }}>
                       <span style={{ color: '#2563eb' }}>👁️ {article.views}</span>
                       <span style={{ color: '#dc2626' }}>❤️ {article.likes}</span>

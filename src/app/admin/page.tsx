@@ -1,18 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-
-// 定义文章类型接口
-interface Article {
-  id: number
-  title: string
-  content: string
-  htmlContent?: string
-  imageUrl: string
-  createdAt: string
-  views: number
-  likes: number
-}
+import { supabase, type Article } from '@/lib/supabase'
 
 // 定义表单数据类型
 interface FormData {
@@ -192,6 +181,7 @@ export default function AdminPage() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingArticle, setEditingArticle] = useState<Article | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -202,6 +192,7 @@ export default function AdminPage() {
   })
 
   useEffect(() => {
+    // 简单的本地认证检查
     if (typeof window !== 'undefined') {
       const auth = localStorage.getItem('adminAuth')
       const isAuth = auth === 'true'
@@ -215,24 +206,19 @@ export default function AdminPage() {
     setIsLoading(false)
   }, [])
 
-  const loadArticles = () => {
-    if (typeof window !== 'undefined') {
-      const savedArticles = localStorage.getItem('articles')
-      if (savedArticles) {
-        try {
-          setArticles(JSON.parse(savedArticles))
-        } catch (error) {
-          console.error('Failed to parse articles:', error)
-          setArticles([])
-        }
-      }
-    }
-  }
+  const loadArticles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*')
+        .order('created_at', { ascending: false })
 
-  const saveArticles = (newArticles: Article[]) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('articles', JSON.stringify(newArticles))
-      setArticles(newArticles)
+      if (error) throw error
+
+      setArticles(data || [])
+    } catch (error) {
+      console.error('Error loading articles:', error)
+      alert('加载文章失败，请检查网络连接')
     }
   }
 
@@ -248,53 +234,69 @@ export default function AdminPage() {
     }
   }
 
-  const handleAddArticle = () => {
+  const handleAddArticle = async () => {
     if (!formData.title || !formData.htmlContent) {
       alert('请填写标题和内容')
       return
     }
 
-    // 检查是否已包含免责声明，简单文本检查
-    const disclaimerText = '本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。'
-    let finalContent = formData.htmlContent
-    
-    if (!finalContent.includes(disclaimerText)) {
-      finalContent += '<div style="background-color: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; padding: 16px; margin-top: 24px; font-size: 14px; color: #92400e; font-weight: 500;">本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。</div>'
-    }
+    setIsSaving(true)
 
-    const newArticle: Article = {
-      id: Date.now(),
-      title: formData.title,
-      content: formData.content || formData.htmlContent.replace(/<[^>]*>/g, ''),
-      htmlContent: finalContent,
-      imageUrl: formData.image ? URL.createObjectURL(formData.image) : '',
-      createdAt: formData.createdAt,
-      views: Math.floor(Math.random() * 1000) + 100,
-      likes: Math.floor(Math.random() * 100) + 10
-    }
+    try {
+      // 检查是否已包含免责声明，简单文本检查
+      const disclaimerText = '本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。'
+      let finalContent = formData.htmlContent
+      
+      if (!finalContent.includes(disclaimerText)) {
+        finalContent += '<div style="background-color: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; padding: 16px; margin-top: 24px; font-size: 14px; color: #92400e; font-weight: 500;">本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。</div>'
+      }
 
-    const newArticles = [newArticle, ...articles]
-    saveArticles(newArticles)
-    setFormData({ 
-      title: '', 
-      content: '', 
-      htmlContent: '', 
-      createdAt: new Date().toISOString().split('T')[0],
-      image: null 
-    })
-    setShowAddForm(false)
+      const newArticle = {
+        title: formData.title,
+        content: formData.content || formData.htmlContent.replace(/<[^>]*>/g, ''),
+        html_content: finalContent,
+        image_url: '', // 暂时不支持图片上传，后续可扩展
+        created_at: formData.createdAt,
+        views: Math.floor(Math.random() * 1000) + 100,
+        likes: Math.floor(Math.random() * 100) + 10
+      }
+
+      const { error } = await supabase
+        .from('articles')
+        .insert([newArticle])
+
+      if (error) throw error
+
+      alert('文章发布成功！')
+      await loadArticles() // 重新加载文章列表
+      
+      // 重置表单
+      setFormData({ 
+        title: '', 
+        content: '', 
+        htmlContent: '', 
+        createdAt: new Date().toISOString().split('T')[0],
+        image: null 
+      })
+      setShowAddForm(false)
+
+    } catch (error) {
+      console.error('Error adding article:', error)
+      alert('发布文章失败，请重试')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleEditArticle = (article: Article) => {
     setEditingArticle(article)
     
     // 编辑时，移除免责声明让用户编辑纯内容
-    let editContent = article.htmlContent || article.content
+    let editContent = article.html_content || article.content
     const disclaimerText = '本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。'
     
     // 如果包含免责声明，就尝试移除它
     if (editContent.includes(disclaimerText)) {
-      // 找到最后一个包含免责声明的div并移除
       const lastIndex = editContent.lastIndexOf('<div')
       if (lastIndex > -1) {
         const beforeDiv = editContent.substring(0, lastIndex)
@@ -309,54 +311,78 @@ export default function AdminPage() {
       title: article.title,
       content: article.content,
       htmlContent: editContent,
-      createdAt: article.createdAt,
+      createdAt: article.created_at,
       image: null
     })
     setShowAddForm(false)
   }
 
-  const handleUpdateArticle = () => {
+  const handleUpdateArticle = async () => {
     if (!formData.title || !formData.htmlContent || !editingArticle) {
       alert('请填写标题和内容')
       return
     }
 
-    // 检查是否已包含免责声明，简单文本检查
-    const disclaimerText = '本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。'
-    let finalContent = formData.htmlContent
-    
-    if (!finalContent.includes(disclaimerText)) {
-      finalContent += '<div style="background-color: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; padding: 16px; margin-top: 24px; font-size: 14px; color: #92400e; font-weight: 500;">本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。</div>'
+    setIsSaving(true)
+
+    try {
+      // 检查是否已包含免责声明
+      const disclaimerText = '本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。'
+      let finalContent = formData.htmlContent
+      
+      if (!finalContent.includes(disclaimerText)) {
+        finalContent += '<div style="background-color: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; padding: 16px; margin-top: 24px; font-size: 14px; color: #92400e; font-weight: 500;">本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。</div>'
+      }
+
+      const { error } = await supabase
+        .from('articles')
+        .update({
+          title: formData.title,
+          content: formData.content || formData.htmlContent.replace(/<[^>]*>/g, ''),
+          html_content: finalContent,
+          created_at: formData.createdAt,
+        })
+        .eq('id', editingArticle.id)
+
+      if (error) throw error
+
+      alert('文章更新成功！')
+      await loadArticles() // 重新加载文章列表
+      
+      setEditingArticle(null)
+      setFormData({ 
+        title: '', 
+        content: '', 
+        htmlContent: '', 
+        createdAt: new Date().toISOString().split('T')[0],
+        image: null 
+      })
+
+    } catch (error) {
+      console.error('Error updating article:', error)
+      alert('更新文章失败，请重试')
+    } finally {
+      setIsSaving(false)
     }
-
-    const updatedArticles = articles.map(article => 
-      article.id === editingArticle.id 
-        ? {
-            ...article,
-            title: formData.title,
-            content: formData.content || formData.htmlContent.replace(/<[^>]*>/g, ''),
-            htmlContent: finalContent,
-            createdAt: formData.createdAt,
-            imageUrl: formData.image ? URL.createObjectURL(formData.image) : article.imageUrl
-          }
-        : article
-    )
-
-    saveArticles(updatedArticles)
-    setEditingArticle(null)
-    setFormData({ 
-      title: '', 
-      content: '', 
-      htmlContent: '', 
-      createdAt: new Date().toISOString().split('T')[0],
-      image: null 
-    })
   }
 
-  const handleDeleteArticle = (id: number) => {
-    if (confirm('确定要删除这篇文章吗？')) {
-      const newArticles = articles.filter(article => article.id !== id)
-      saveArticles(newArticles)
+  const handleDeleteArticle = async (id: number) => {
+    if (!confirm('确定要删除这篇文章吗？')) return
+
+    try {
+      const { error } = await supabase
+        .from('articles')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
+      alert('文章删除成功！')
+      await loadArticles() // 重新加载文章列表
+
+    } catch (error) {
+      console.error('Error deleting article:', error)
+      alert('删除文章失败，请重试')
     }
   }
 
@@ -477,7 +503,7 @@ export default function AdminPage() {
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
         
         {/* 操作按钮区 */}
-        <div style={{ marginBottom: '24px', display: 'flex', gap: '12px' }}>
+        <div style={{ marginBottom: '24px', display: 'flex', gap: '12px', alignItems: 'center' }}>
           <button 
             onClick={() => {
               setShowAddForm(!showAddForm)
@@ -529,6 +555,11 @@ export default function AdminPage() {
             >
               取消编辑
             </button>
+          )}
+
+          {/* 状态提示 */}
+          {isSaving && (
+            <span style={{ color: '#2563eb', fontSize: '14px' }}>保存中...</span>
           )}
         </div>
 
@@ -597,36 +628,41 @@ export default function AdminPage() {
             
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>
-                上传图片
+                上传图片（暂不支持）
               </label>
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) => setFormData({...formData, image: e.target.files?.[0] || null})}
+                disabled
                 style={{ 
                   width: '100%', 
                   padding: '12px 16px', 
                   border: '1px solid #d1d5db', 
-                  borderRadius: '6px'
+                  borderRadius: '6px',
+                  opacity: 0.5
                 }}
               />
+              <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
+                图片上传功能将在后续版本中添加
+              </div>
             </div>
             
             <div style={{ display: 'flex', gap: '12px' }}>
               <button 
                 onClick={editingArticle ? handleUpdateArticle : handleAddArticle}
+                disabled={isSaving}
                 style={{ 
-                  backgroundColor: '#dc2626', 
+                  backgroundColor: isSaving ? '#9ca3af' : '#dc2626', 
                   color: 'white', 
                   border: 'none', 
                   padding: '12px 24px', 
                   borderRadius: '6px',
-                  cursor: 'pointer',
+                  cursor: isSaving ? 'not-allowed' : 'pointer',
                   fontSize: '14px',
                   fontWeight: '500'
                 }}
               >
-                {editingArticle ? '保存修改' : '发布文章'}
+                {isSaving ? '保存中...' : (editingArticle ? '保存修改' : '发布文章')}
               </button>
               
               <button 
@@ -641,13 +677,14 @@ export default function AdminPage() {
                     image: null 
                   })
                 }}
+                disabled={isSaving}
                 style={{ 
                   backgroundColor: '#6b7280', 
                   color: 'white', 
                   border: 'none', 
                   padding: '12px 24px', 
                   borderRadius: '6px',
-                  cursor: 'pointer',
+                  cursor: isSaving ? 'not-allowed' : 'pointer',
                   fontSize: '14px',
                   fontWeight: '500'
                 }}
@@ -687,7 +724,7 @@ export default function AdminPage() {
                       {article.content.substring(0, 100)}...
                     </p>
                     <div style={{ fontSize: '12px', color: '#9ca3af', display: 'flex', gap: '16px' }}>
-                      <span>发布时间：{article.createdAt}</span>
+                      <span>发布时间：{article.created_at}</span>
                       <span>浏览：{article.views}</span>
                       <span>点赞：{article.likes}</span>
                     </div>
@@ -709,7 +746,7 @@ export default function AdminPage() {
                       编辑
                     </button>
                     <button 
-                      onClick={() => handleDeleteArticle(article.id)}
+                      onClick={() => handleDeleteArticle(article.id!)}
                       style={{ 
                         backgroundColor: '#dc2626', 
                         color: 'white', 

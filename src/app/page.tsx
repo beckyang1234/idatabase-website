@@ -43,34 +43,12 @@ export default function Home() {
           setArticles(validArticles)
         } catch (error) {
           console.error('Failed to parse articles:', error)
-          const defaultData: Article[] = [
-            {
-              id: 1,
-              title: '9月11日荐股龙虎榜分析',
-              content: '今日龙虎榜数据显示，机构席位买入较为活跃，主要集中在新能源、医药、科技等板块。其中，宁德时代、比亚迪等个股获得机构重点关注。\n\n重点数据：\n• 机构买入净额：15.2亿元\n• 游资买入净额：8.7亿元\n• 活跃个股数量：156只\n\n建议投资者关注资金流向，理性投资。',
-              imageUrl: '',
-              createdAt: '2025-09-11',
-              views: 1256,
-              likes: 89
-            }
-          ]
-          setArticles(defaultData)
-          localStorage.setItem('articles', JSON.stringify(defaultData))
+          // 如果解析失败，设置空数组而不是默认数据
+          setArticles([])
         }
       } else {
-        const defaultData: Article[] = [
-          {
-            id: 1,
-            title: '9月11日荐股龙虎榜分析',
-            content: '今日龙虎榜数据显示，机构席位买入较为活跃，主要集中在新能源、医药、科技等板块。其中，宁德时代、比亚迪等个股获得机构重点关注。\n\n重点数据：\n• 机构买入净额：15.2亿元\n• 游资买入净额：8.7亿元\n• 活跃个股数量：156只\n\n建议投资者关注资金流向，理性投资。',
-            imageUrl: '',
-            createdAt: '2025-09-11',
-            views: 1256,
-            likes: 89
-          }
-        ]
-        setArticles(defaultData)
-        localStorage.setItem('articles', JSON.stringify(defaultData))
+        // 如果没有保存的文章，设置空数组而不是默认数据
+        setArticles([])
       }
     }
     
@@ -194,6 +172,10 @@ export default function Home() {
                         objectFit: 'cover', 
                         display: 'block' 
                       }}
+                      onError={(e) => {
+                        const target = e.currentTarget as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
                     />
                   </div>
                 )}
@@ -219,14 +201,14 @@ export default function Home() {
                     fontSize: '15px'
                   }}>
                     {isExpanded ? (
-                      // 显示完整内容
+                      // 显示完整内容（已包含免责声明）
                       article.htmlContent ? (
                         <div dangerouslySetInnerHTML={{ __html: article.htmlContent }} />
                       ) : (
                         <div>{article.content}</div>
                       )
                     ) : (
-                      // 显示摘要
+                      // 显示摘要（从content字段获取，不包含HTML）
                       getExcerpt(article.content, 3)
                     )}
                   </div>
@@ -253,21 +235,7 @@ export default function Home() {
                     </button>
                   </div>
 
-                  {/* 显示免责声明（仅在展开时） */}
-                  {isExpanded && (
-                    <div style={{
-                      backgroundColor: '#fef3c7',
-                      border: '1px solid #fbbf24',
-                      borderRadius: '6px',
-                      padding: '16px',
-                      fontSize: '14px',
-                      color: '#92400e',
-                      fontWeight: '500',
-                      marginBottom: '20px'
-                    }}>
-                      本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。
-                    </div>
-                  )}
+                  {/* 移除这里的免责声明，因为已经在htmlContent中了 */}
                   
                   <div style={{ 
                     fontSize: '13px', 
@@ -289,6 +257,7 @@ export default function Home() {
             )
           })
         ) : (
+          // 无文章时的提示
           <div style={{ 
             backgroundColor: 'white', 
             border: '1px solid #e5e7eb', 
@@ -296,7 +265,8 @@ export default function Home() {
             padding: '60px', 
             textAlign: 'center'
           }}>
-            <div style={{ color: '#6b7280', fontSize: '16px' }}>暂无文章内容</div>
+            <div style={{ color: '#6b7280', fontSize: '16px', marginBottom: '16px' }}>暂无文章内容</div>
+            <div style={{ color: '#9ca3af', fontSize: '14px' }}>请前往管理后台发布第一篇文章</div>
           </div>
         )}
       </div>

@@ -28,9 +28,13 @@ const SimpleEditor = ({ value, onChange }: { value: string, onChange: (value: st
   const editorRef = useRef<HTMLDivElement>(null)
 
   const executeCommand = (command: string, value?: string) => {
-    document.execCommand(command, false, value)
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML)
+    try {
+      document.execCommand(command, false, value)
+      if (editorRef.current) {
+        onChange(editorRef.current.innerHTML)
+      }
+    } catch (error) {
+      console.warn('Editor command failed:', command, error)
     }
   }
 
@@ -197,6 +201,35 @@ export default function AdminPage() {
     image: null
   })
 
+  // 清理重复免责声明的函数
+  const cleanupDuplicateDisclaimers = (content: string): string => {
+    const disclaimerPattern = /<div[^>]*>本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。<\/div>/g
+    const matches = content.match(disclaimerPattern)
+    
+    if (matches && matches.length > 1) {
+      // 移除所有免责声明
+      return content.replace(disclaimerPattern, '')
+    }
+    
+    return content
+  }
+
+  // 添加免责声明（如果不存在）
+  const addDisclaimerIfNeeded = (content: string): string => {
+    const disclaimerText = '本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。'
+    const disclaimerHtml = '<div style="background-color: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; padding: 16px; margin-top: 24px; font-size: 14px; color: #92400e; font-weight: 500;">本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。</div>'
+    
+    // 先清理重复的声明
+    let cleanedContent = cleanupDuplicateDisclaimers(content)
+    
+    // 检查是否已经包含免责声明
+    if (!cleanedContent.includes(disclaimerText)) {
+      cleanedContent += disclaimerHtml
+    }
+    
+    return cleanedContent
+  }
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const auth = localStorage.getItem('adminAuth')
@@ -250,9 +283,8 @@ export default function AdminPage() {
       return
     }
 
-    // 添加免责声明
-    const contentWithDisclaimer = formData.htmlContent + 
-      '<div style="background-color: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; padding: 16px; margin-top: 24px; font-size: 14px; color: #92400e; font-weight: 500;">本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。</div>'
+    // 添加免责声明（智能检查重复）
+    const contentWithDisclaimer = addDisclaimerIfNeeded(formData.htmlContent)
 
     const newArticle: Article = {
       id: Date.now(),
@@ -279,10 +311,15 @@ export default function AdminPage() {
 
   const handleEditArticle = (article: Article) => {
     setEditingArticle(article)
+    // 编辑时移除免责声明，让用户编辑纯内容
+    let editContent = article.htmlContent || article.content
+    const disclaimerPattern = /<div[^>]*>本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。<\/div>/g
+    editContent = editContent.replace(disclaimerPattern, '')
+    
     setFormData({
       title: article.title,
       content: article.content,
-      htmlContent: article.htmlContent || article.content,
+      htmlContent: editContent,
       createdAt: article.createdAt,
       image: null
     })
@@ -295,9 +332,8 @@ export default function AdminPage() {
       return
     }
 
-    // 添加免责声明
-    const contentWithDisclaimer = formData.htmlContent + 
-      '<div style="background-color: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; padding: 16px; margin-top: 24px; font-size: 14px; color: #92400e; font-weight: 500;">本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。</div>'
+    // 添加免责声明（智能检查重复）
+    const contentWithDisclaimer = addDisclaimerIfNeeded(formData.htmlContent)
 
     const updatedArticles = articles.map(article => 
       article.id === editingArticle.id 
@@ -560,6 +596,9 @@ export default function AdminPage() {
                 value={formData.htmlContent}
                 onChange={(content) => setFormData({...formData, htmlContent: content})}
               />
+              <div style={{ marginTop: '8px', fontSize: '12px', color: '#6b7280' }}>
+                提示：免责声明会自动添加到文章末尾，无需手动添加
+              </div>
             </div>
             
             <div style={{ marginBottom: '20px' }}>

@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
 
 // 定义文章类型接口
@@ -25,33 +24,40 @@ const getExcerpt = (content: string, maxLines: number = 3) => {
 export default function Home() {
   const [articles, setArticles] = useState<Article[]>([])
   const [showDonation, setShowDonation] = useState(false)
+  const [expandedArticleId, setExpandedArticleId] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-  if (typeof window !== 'undefined') {
-    // 详细调试信息
-    console.log('=== DEBUG INFO ===');
-    console.log('Current URL:', window.location.href);
-    console.log('Current domain:', window.location.hostname);
-    
-    // 检查localStorage
-    console.log('LocalStorage keys:', Object.keys(localStorage));
-    
-    const savedArticles = localStorage.getItem('articles')
-    if (savedArticles) {
-      try {
-        const parsedArticles: Article[] = JSON.parse(savedArticles) // 添加类型注解
-        // 验证数据格式和内容
-        const validArticles = parsedArticles.filter((article: Article) => // 修复类型
-          article && 
-          typeof article.title === 'string' && 
-          typeof article.content === 'string' &&
-          !article.title.includes('CRS') && // 过滤可疑内容
-          !article.content.includes('CRS')
-        )
-        setArticles(validArticles)
-      } catch (error) {
-        console.error('Failed to parse articles:', error)
+    if (typeof window !== 'undefined') {
+      const savedArticles = localStorage.getItem('articles')
+      if (savedArticles) {
+        try {
+          const parsedArticles: Article[] = JSON.parse(savedArticles)
+          const validArticles = parsedArticles.filter((article: Article) => 
+            article && 
+            typeof article.title === 'string' && 
+            typeof article.content === 'string' &&
+            !article.title.includes('CRS') && 
+            !article.content.includes('CRS')
+          )
+          setArticles(validArticles)
+        } catch (error) {
+          console.error('Failed to parse articles:', error)
+          const defaultData: Article[] = [
+            {
+              id: 1,
+              title: '9月11日荐股龙虎榜分析',
+              content: '今日龙虎榜数据显示，机构席位买入较为活跃，主要集中在新能源、医药、科技等板块。其中，宁德时代、比亚迪等个股获得机构重点关注。\n\n重点数据：\n• 机构买入净额：15.2亿元\n• 游资买入净额：8.7亿元\n• 活跃个股数量：156只\n\n建议投资者关注资金流向，理性投资。',
+              imageUrl: '',
+              createdAt: '2025-09-11',
+              views: 1256,
+              likes: 89
+            }
+          ]
+          setArticles(defaultData)
+          localStorage.setItem('articles', JSON.stringify(defaultData))
+        }
+      } else {
         const defaultData: Article[] = [
           {
             id: 1,
@@ -66,26 +72,14 @@ export default function Home() {
         setArticles(defaultData)
         localStorage.setItem('articles', JSON.stringify(defaultData))
       }
-    } else {
-      const defaultData: Article[] = [
-        {
-          id: 1,
-          title: '9月11日荐股龙虎榜分析',
-          content: '今日龙虎榜数据显示，机构席位买入较为活跃，主要集中在新能源、医药、科技等板块。其中，宁德时代、比亚迪等个股获得机构重点关注。\n\n重点数据：\n• 机构买入净额：15.2亿元\n• 游资买入净额：8.7亿元\n• 活跃个股数量：156只\n\n建议投资者关注资金流向，理性投资。',
-          imageUrl: '',
-          createdAt: '2025-09-11',
-          views: 1256,
-          likes: 89
-        }
-      ]
-      setArticles(defaultData)
-      localStorage.setItem('articles', JSON.stringify(defaultData))
     }
-  }
-  
-  setIsLoading(false)
-}, [])
+    
+    setIsLoading(false)
+  }, [])
 
+  const toggleArticle = (articleId: number) => {
+    setExpandedArticleId(expandedArticleId === articleId ? null : articleId)
+  }
 
   if (isLoading) {
     return (
@@ -174,103 +168,126 @@ export default function Home() {
         
         {/* 文章列表 */}
         {articles.length > 0 ? (
-          articles.map((article) => (
-            <article key={article.id} style={{ 
-              backgroundColor: 'white', 
-              border: '1px solid #e5e7eb', 
-              borderRadius: '6px', 
-              marginBottom: '20px',
-              overflow: 'hidden',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-              transition: 'box-shadow 0.2s ease'
-            }}>
-              {/* 文章图片 */}
-              {article.imageUrl && (
-                <div style={{ borderBottom: '1px solid #e5e7eb' }}>
-                  <Image 
-                    src={article.imageUrl} 
-                    alt={article.title}
-                    width={1200}
-                    height={300}
-                    style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }}
-                  />
-                </div>
-              )}
-              
-              {/* 文章内容 */}
-              <div style={{ padding: '24px' }}>
-                <h2 style={{ 
-                  margin: '0 0 16px 0', 
-                  fontSize: '20px', 
-                  fontWeight: '600', 
-                  color: '#1f2937',
-                  lineHeight: '1.4'
-                }}>
-                  <Link 
-                    href={`/article/${article.id}`}
-                    style={{ 
-                      color: '#1f2937', 
-                      textDecoration: 'none',
-                      transition: 'color 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = '#2563eb'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = '#1f2937'}
-                  >
+          articles.map((article) => {
+            const isExpanded = expandedArticleId === article.id
+            return (
+              <article key={article.id} style={{ 
+                backgroundColor: 'white', 
+                border: '1px solid #e5e7eb', 
+                borderRadius: '6px', 
+                marginBottom: '20px',
+                overflow: 'hidden',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                transition: 'box-shadow 0.2s ease'
+              }}>
+                {/* 文章图片 */}
+                {article.imageUrl && (
+                  <div style={{ borderBottom: '1px solid #e5e7eb' }}>
+                    <Image 
+                      src={article.imageUrl} 
+                      alt={article.title}
+                      width={1200}
+                      height={isExpanded ? 400 : 200}
+                      style={{ 
+                        width: '100%', 
+                        height: isExpanded ? 'auto' : '200px', 
+                        objectFit: 'cover', 
+                        display: 'block' 
+                      }}
+                    />
+                  </div>
+                )}
+                
+                {/* 文章内容 */}
+                <div style={{ padding: '24px' }}>
+                  <h2 style={{ 
+                    margin: '0 0 16px 0', 
+                    fontSize: '20px', 
+                    fontWeight: '600', 
+                    color: '#1f2937',
+                    lineHeight: '1.4'
+                  }}>
                     {article.title}
-                  </Link>
-                </h2>
-                
-                {/* 文章摘要 */}
-                <div style={{ 
-                  color: '#4b5563', 
-                  lineHeight: '1.7', 
-                  whiteSpace: 'pre-line',
-                  marginBottom: '20px',
-                  fontSize: '15px'
-                }}>
-                  {getExcerpt(article.content, 3)}
-                </div>
+                  </h2>
+                  
+                  {/* 文章内容 */}
+                  <div style={{ 
+                    color: '#4b5563', 
+                    lineHeight: '1.7', 
+                    whiteSpace: 'pre-line',
+                    marginBottom: '20px',
+                    fontSize: '15px'
+                  }}>
+                    {isExpanded ? (
+                      // 显示完整内容
+                      article.htmlContent ? (
+                        <div dangerouslySetInnerHTML={{ __html: article.htmlContent }} />
+                      ) : (
+                        <div>{article.content}</div>
+                      )
+                    ) : (
+                      // 显示摘要
+                      getExcerpt(article.content, 3)
+                    )}
+                  </div>
 
-                {/* 阅读更多按钮 */}
-                <div style={{ marginBottom: '20px' }}>
-                  <Link 
-                    href={`/article/${article.id}`}
-                    style={{
-                      display: 'inline-block',
-                      backgroundColor: '#2563eb',
-                      color: 'white',
-                      padding: '8px 16px',
-                      borderRadius: '4px',
-                      textDecoration: 'none',
+                  {/* 阅读更多/收起按钮 */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <button 
+                      onClick={() => toggleArticle(article.id)}
+                      style={{
+                        backgroundColor: '#2563eb',
+                        color: 'white',
+                        padding: '8px 16px',
+                        borderRadius: '4px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+                    >
+                      {isExpanded ? '收起 ↑' : '阅读全文 ↓'}
+                    </button>
+                  </div>
+
+                  {/* 显示免责声明（仅在展开时） */}
+                  {isExpanded && (
+                    <div style={{
+                      backgroundColor: '#fef3c7',
+                      border: '1px solid #fbbf24',
+                      borderRadius: '6px',
+                      padding: '16px',
                       fontSize: '14px',
+                      color: '#92400e',
                       fontWeight: '500',
-                      transition: 'background-color 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
-                  >
-                    阅读全文 →
-                  </Link>
-                </div>
-                
-                <div style={{ 
-                  fontSize: '13px', 
-                  color: '#6b7280', 
-                  paddingTop: '16px', 
-                  borderTop: '1px solid #f3f4f6',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <span>发布时间：{article.createdAt}</span>
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <span style={{ color: '#2563eb' }}>👁️ {article.views}</span>
-                    <span style={{ color: '#dc2626' }}>❤️ {article.likes}</span>
+                      marginBottom: '20px'
+                    }}>
+                      本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。
+                    </div>
+                  )}
+                  
+                  <div style={{ 
+                    fontSize: '13px', 
+                    color: '#6b7280', 
+                    paddingTop: '16px', 
+                    borderTop: '1px solid #f3f4f6',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <span>发布时间：{article.createdAt}</span>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <span style={{ color: '#2563eb' }}>👁️ {article.views}</span>
+                      <span style={{ color: '#dc2626' }}>❤️ {article.likes}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </article>
-          ))
+              </article>
+            )
+          })
         ) : (
           <div style={{ 
             backgroundColor: 'white', 

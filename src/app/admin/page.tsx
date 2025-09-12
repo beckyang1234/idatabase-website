@@ -201,35 +201,6 @@ export default function AdminPage() {
     image: null
   })
 
-  // 清理重复免责声明的函数
-  const cleanupDuplicateDisclaimers = (content: string): string => {
-    const disclaimerPattern = /<div[^>]*>本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。<\/div>/g
-    const matches = content.match(disclaimerPattern)
-    
-    if (matches && matches.length > 1) {
-      // 移除所有免责声明
-      return content.replace(disclaimerPattern, '')
-    }
-    
-    return content
-  }
-
-  // 添加免责声明（如果不存在）
-  const addDisclaimerIfNeeded = (content: string): string => {
-    const disclaimerText = '本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。'
-    const disclaimerHtml = '<div style="background-color: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; padding: 16px; margin-top: 24px; font-size: 14px; color: #92400e; font-weight: 500;">本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。</div>'
-    
-    // 先清理重复的声明
-    let cleanedContent = cleanupDuplicateDisclaimers(content)
-    
-    // 检查是否已经包含免责声明
-    if (!cleanedContent.includes(disclaimerText)) {
-      cleanedContent += disclaimerHtml
-    }
-    
-    return cleanedContent
-  }
-
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const auth = localStorage.getItem('adminAuth')
@@ -283,14 +254,19 @@ export default function AdminPage() {
       return
     }
 
-    // 添加免责声明（智能检查重复）
-    const contentWithDisclaimer = addDisclaimerIfNeeded(formData.htmlContent)
+    // 检查是否已包含免责声明，简单文本检查
+    const disclaimerText = '本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。'
+    let finalContent = formData.htmlContent
+    
+    if (!finalContent.includes(disclaimerText)) {
+      finalContent += '<div style="background-color: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; padding: 16px; margin-top: 24px; font-size: 14px; color: #92400e; font-weight: 500;">本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。</div>'
+    }
 
     const newArticle: Article = {
       id: Date.now(),
       title: formData.title,
-      content: formData.content || formData.htmlContent.replace(/<[^>]*>/g, ''), // 纯文本备份
-      htmlContent: contentWithDisclaimer,
+      content: formData.content || formData.htmlContent.replace(/<[^>]*>/g, ''),
+      htmlContent: finalContent,
       imageUrl: formData.image ? URL.createObjectURL(formData.image) : '',
       createdAt: formData.createdAt,
       views: Math.floor(Math.random() * 1000) + 100,
@@ -311,10 +287,23 @@ export default function AdminPage() {
 
   const handleEditArticle = (article: Article) => {
     setEditingArticle(article)
-    // 编辑时移除免责声明，让用户编辑纯内容
+    
+    // 编辑时，移除免责声明让用户编辑纯内容
     let editContent = article.htmlContent || article.content
-    const disclaimerPattern = /<div[^>]*>本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。<\/div>/g
-    editContent = editContent.replace(disclaimerPattern, '')
+    const disclaimerText = '本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。'
+    
+    // 如果包含免责声明，就尝试移除它
+    if (editContent.includes(disclaimerText)) {
+      // 找到最后一个包含免责声明的div并移除
+      const lastIndex = editContent.lastIndexOf('<div')
+      if (lastIndex > -1) {
+        const beforeDiv = editContent.substring(0, lastIndex)
+        const afterDiv = editContent.substring(lastIndex)
+        if (afterDiv.includes(disclaimerText)) {
+          editContent = beforeDiv.trim()
+        }
+      }
+    }
     
     setFormData({
       title: article.title,
@@ -332,8 +321,13 @@ export default function AdminPage() {
       return
     }
 
-    // 添加免责声明（智能检查重复）
-    const contentWithDisclaimer = addDisclaimerIfNeeded(formData.htmlContent)
+    // 检查是否已包含免责声明，简单文本检查
+    const disclaimerText = '本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。'
+    let finalContent = formData.htmlContent
+    
+    if (!finalContent.includes(disclaimerText)) {
+      finalContent += '<div style="background-color: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; padding: 16px; margin-top: 24px; font-size: 14px; color: #92400e; font-weight: 500;">本网站内容仅供交流学习，不构成任何投资建议，盈亏自负。</div>'
+    }
 
     const updatedArticles = articles.map(article => 
       article.id === editingArticle.id 
@@ -341,7 +335,7 @@ export default function AdminPage() {
             ...article,
             title: formData.title,
             content: formData.content || formData.htmlContent.replace(/<[^>]*>/g, ''),
-            htmlContent: contentWithDisclaimer,
+            htmlContent: finalContent,
             createdAt: formData.createdAt,
             imageUrl: formData.image ? URL.createObjectURL(formData.image) : article.imageUrl
           }

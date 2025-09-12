@@ -1,7 +1,7 @@
 'use client'
 
 export default function Error({
-  error,
+  error: _error,  // 添加下划线前缀表示未使用
   reset,
 }: {
   error: Error & { digest?: string }

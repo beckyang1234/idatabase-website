@@ -28,49 +28,30 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // 详细调试信息
-      console.log('=== DEBUG INFO ===');
-      console.log('Current URL:', window.location.href);
-      console.log('Current domain:', window.location.hostname);
-      
-      // 检查localStorage
-      console.log('LocalStorage keys:', Object.keys(localStorage));
-      
-      // 强制清除所有存储（如果需要）
-      // localStorage.clear();
-      // sessionStorage.clear();
-      
-      const savedArticles = localStorage.getItem('articles')
-      if (savedArticles) {
-        try {
-          const parsedArticles = JSON.parse(savedArticles)
-          // 验证数据格式和内容
-          const validArticles = parsedArticles.filter((article: any) => 
-            article && 
-            typeof article.title === 'string' && 
-            typeof article.content === 'string' &&
-            !article.title.includes('CRS') && // 过滤可疑内容
-            !article.content.includes('CRS')
-          )
-          setArticles(validArticles)
-        } catch (error) {
-          console.error('Failed to parse articles:', error)
-          const defaultData: Article[] = [
-            {
-              id: 1,
-              title: '9月11日荐股龙虎榜分析',
-              content: '今日龙虎榜数据显示，机构席位买入较为活跃，主要集中在新能源、医药、科技等板块。其中，宁德时代、比亚迪等个股获得机构重点关注。\n\n重点数据：\n• 机构买入净额：15.2亿元\n• 游资买入净额：8.7亿元\n• 活跃个股数量：156只\n\n建议投资者关注资金流向，理性投资。',
-              imageUrl: '',
-              createdAt: '2025-09-11',
-              views: 1256,
-              likes: 89
-            }
-          ]
-          setArticles(defaultData)
-          localStorage.setItem('articles', JSON.stringify(defaultData))
-        }
-      } else {
+  if (typeof window !== 'undefined') {
+    // 详细调试信息
+    console.log('=== DEBUG INFO ===');
+    console.log('Current URL:', window.location.href);
+    console.log('Current domain:', window.location.hostname);
+    
+    // 检查localStorage
+    console.log('LocalStorage keys:', Object.keys(localStorage));
+    
+    const savedArticles = localStorage.getItem('articles')
+    if (savedArticles) {
+      try {
+        const parsedArticles: Article[] = JSON.parse(savedArticles) // 添加类型注解
+        // 验证数据格式和内容
+        const validArticles = parsedArticles.filter((article: Article) => // 修复类型
+          article && 
+          typeof article.title === 'string' && 
+          typeof article.content === 'string' &&
+          !article.title.includes('CRS') && // 过滤可疑内容
+          !article.content.includes('CRS')
+        )
+        setArticles(validArticles)
+      } catch (error) {
+        console.error('Failed to parse articles:', error)
         const defaultData: Article[] = [
           {
             id: 1,
@@ -85,10 +66,26 @@ export default function Home() {
         setArticles(defaultData)
         localStorage.setItem('articles', JSON.stringify(defaultData))
       }
+    } else {
+      const defaultData: Article[] = [
+        {
+          id: 1,
+          title: '9月11日荐股龙虎榜分析',
+          content: '今日龙虎榜数据显示，机构席位买入较为活跃，主要集中在新能源、医药、科技等板块。其中，宁德时代、比亚迪等个股获得机构重点关注。\n\n重点数据：\n• 机构买入净额：15.2亿元\n• 游资买入净额：8.7亿元\n• 活跃个股数量：156只\n\n建议投资者关注资金流向，理性投资。',
+          imageUrl: '',
+          createdAt: '2025-09-11',
+          views: 1256,
+          likes: 89
+        }
+      ]
+      setArticles(defaultData)
+      localStorage.setItem('articles', JSON.stringify(defaultData))
     }
-    
-    setIsLoading(false)
-  }, [])
+  }
+  
+  setIsLoading(false)
+}, [])
+
 
   if (isLoading) {
     return (

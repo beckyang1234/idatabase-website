@@ -123,11 +123,9 @@ export default function Home() {
           height: '50px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '500' }}>龙虎榜分析</h1>
+            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '500' }}>荐股大赛（X账号@jiangudasai）</h1>
             <div style={{ display: 'flex', gap: '15px', fontSize: '14px' }}>
-              <span style={{ color: '#fff', cursor: 'pointer' }}>首页</span>
-              <span style={{ color: '#fff', cursor: 'pointer' }}>分析</span>
-              <span style={{ color: '#fff', cursor: 'pointer' }}>数据</span>
+              <span style={{ color: '#fff', cursor: 'pointer' }}>真实、公开、可跟随</span>
             </div>
           </div>
           

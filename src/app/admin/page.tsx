@@ -1,11 +1,6 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
-
-// 动态导入富文本编辑器（避免SSR问题）
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
-import 'react-quill/dist/quill.snow.css'
 
 // 定义文章类型接口
 interface Article {
@@ -28,24 +23,163 @@ interface FormData {
   image: File | null
 }
 
-// 富文本编辑器配置
-const quillModules = {
-  toolbar: [
-    [{ 'header': [1, 2, 3, false] }],
-    ['bold', 'italic', 'underline', 'strike'],
-    [{ 'color': [] }, { 'background': [] }],
-    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-    ['blockquote', 'code-block'],
-    ['link'],
-    ['clean']
-  ],
-}
+// 简单的富文本编辑器工具栏
+const SimpleEditor = ({ value, onChange }: { value: string, onChange: (value: string) => void }) => {
+  const editorRef = useRef<HTMLDivElement>(null)
 
-const quillFormats = [
-  'header', 'bold', 'italic', 'underline', 'strike',
-  'color', 'background', 'list', 'bullet', 'blockquote', 
-  'code-block', 'link'
-]
+  const executeCommand = (command: string, value?: string) => {
+    document.execCommand(command, false, value)
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML)
+    }
+  }
+
+  const handleInput = () => {
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML)
+    }
+  }
+
+  useEffect(() => {
+    if (editorRef.current && editorRef.current.innerHTML !== value) {
+      editorRef.current.innerHTML = value
+    }
+  }, [value])
+
+  return (
+    <div style={{ border: '1px solid #d1d5db', borderRadius: '6px', overflow: 'hidden' }}>
+      {/* 工具栏 */}
+      <div style={{ 
+        backgroundColor: '#f9fafb', 
+        borderBottom: '1px solid #d1d5db', 
+        padding: '8px 12px',
+        display: 'flex',
+        gap: '8px',
+        flexWrap: 'wrap'
+      }}>
+        <button
+          type="button"
+          onClick={() => executeCommand('bold')}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            backgroundColor: 'white',
+            cursor: 'pointer',
+            fontSize: '12px',
+            fontWeight: 'bold'
+          }}
+        >
+          B
+        </button>
+        <button
+          type="button"
+          onClick={() => executeCommand('italic')}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            backgroundColor: 'white',
+            cursor: 'pointer',
+            fontSize: '12px',
+            fontStyle: 'italic'
+          }}
+        >
+          I
+        </button>
+        <button
+          type="button"
+          onClick={() => executeCommand('underline')}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            backgroundColor: 'white',
+            cursor: 'pointer',
+            fontSize: '12px',
+            textDecoration: 'underline'
+          }}
+        >
+          U
+        </button>
+        <button
+          type="button"
+          onClick={() => executeCommand('foreColor', '#dc2626')}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            backgroundColor: 'white',
+            cursor: 'pointer',
+            fontSize: '12px',
+            color: '#dc2626'
+          }}
+        >
+          红色
+        </button>
+        <button
+          type="button"
+          onClick={() => executeCommand('foreColor', '#2563eb')}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            backgroundColor: 'white',
+            cursor: 'pointer',
+            fontSize: '12px',
+            color: '#2563eb'
+          }}
+        >
+          蓝色
+        </button>
+        <button
+          type="button"
+          onClick={() => executeCommand('insertUnorderedList')}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            backgroundColor: 'white',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+        >
+          • 列表
+        </button>
+        <button
+          type="button"
+          onClick={() => executeCommand('formatBlock', 'h3')}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            backgroundColor: 'white',
+            cursor: 'pointer',
+            fontSize: '12px',
+            fontWeight: 'bold'
+          }}
+        >
+          H3
+        </button>
+      </div>
+      
+      {/* 编辑区域 */}
+      <div
+        ref={editorRef}
+        contentEditable
+        onInput={handleInput}
+        style={{
+          minHeight: '250px',
+          padding: '16px',
+          lineHeight: '1.6',
+          fontSize: '14px',
+          outline: 'none'
+        }}
+        suppressContentEditableWarning={true}
+      />
+    </div>
+  )
+}
 
 export default function AdminPage() {
   const [articles, setArticles] = useState<Article[]>([])
@@ -54,7 +188,6 @@ export default function AdminPage() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingArticle, setEditingArticle] = useState<Article | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isClient, setIsClient] = useState(false)
   
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -65,8 +198,6 @@ export default function AdminPage() {
   })
 
   useEffect(() => {
-    setIsClient(true)
-    
     if (typeof window !== 'undefined') {
       const auth = localStorage.getItem('adminAuth')
       const isAuth = auth === 'true'
@@ -372,7 +503,7 @@ export default function AdminPage() {
         </div>
 
         {/* 发布/编辑表单 */}
-        {(showAddForm || editingArticle) && isClient && (
+        {(showAddForm || editingArticle) && (
           <div style={{ 
             backgroundColor: 'white', 
             border: '1px solid #e5e7eb', 
@@ -425,17 +556,10 @@ export default function AdminPage() {
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>
                 文章内容
               </label>
-              <div style={{ minHeight: '300px' }}>
-                <ReactQuill
-                  theme="snow"
-                  value={formData.htmlContent}
-                  onChange={(content) => setFormData({...formData, htmlContent: content})}
-                  modules={quillModules}
-                  formats={quillFormats}
-                  style={{ height: '250px', marginBottom: '50px' }}
-                  placeholder="输入文章内容，支持格式化文本..."
-                />
-              </div>
+              <SimpleEditor
+                value={formData.htmlContent}
+                onChange={(content) => setFormData({...formData, htmlContent: content})}
+              />
             </div>
             
             <div style={{ marginBottom: '20px' }}>

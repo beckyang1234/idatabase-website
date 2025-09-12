@@ -1,3 +1,8 @@
+// 移除 generateStaticParams，因为它会导致问题
+// export async function generateStaticParams() {
+//   return []
+// }
+
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -13,13 +18,6 @@ interface Article {
   createdAt: string
   views: number
   likes: number
-}
-
-// 静态导出需要的函数
-export async function generateStaticParams() {
-  // 返回空数组，因为我们的文章是动态创建的
-  // 在实际访问时会fallback到客户端渲染
-  return []
 }
 
 export default function ArticlePage() {
